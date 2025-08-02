@@ -1,4 +1,4 @@
-<script>
+
   /**
    * If the URL is an OpenSea/SeaDN video (ends in .mp4/.mov on those domains)
    * and doesn’t already have a frame-time param, strip any query and append frame-time=1.
@@ -179,4 +179,4 @@
     displayNFTs(currentPage);
     window.addEventListener('scroll', handleScroll);
   })();
-</script>
+
