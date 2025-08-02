@@ -1,8 +1,9 @@
 body {
     margin: 0 !important;
    font-family: "Outfit", sans-serif !important;
-    color: #fff !important;
+    color: #000 !important;
     overflow-x: hidden !important; 
+    background-color: red !important;
 }
 
 /* Featured Section */
