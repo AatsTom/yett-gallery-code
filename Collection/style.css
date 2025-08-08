@@ -12,18 +12,16 @@
     font-size: 3rem;
     color: #ffffff;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
-    
 }
 
 /* Container for NFT cards */
 #nft-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));  /* Adjust column sizes dynamically */
-   grid-gap: 0.5rem !important;
+    grid-gap: 0.5rem !important;
     width: 100%;  /* Make sure the grid takes full width */
     max-width: 100vw;  /* Ensure it doesn't overflow horizontally */
     margin: 0 auto;  /* Center the grid */
-
 }
 
 /* Media inside each card */
@@ -57,9 +55,9 @@
 /* Title inside the gradient */
 .nft-card h2 {
     font-family: "Outfit", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 600;
-  font-style: normal;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
     font-size: 1.2rem !important;
     color: white;
     margin: 0;
@@ -68,17 +66,17 @@
 
 /* Creator inside the gradient */
 .nft-card p {
-     font-family: "Outfit", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 300;
-  font-style: normal;
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
     font-size: 1rem !important;
     color: rgba(255, 255, 255, 0.8);
     margin: 5px 0 0 0;
 }
 
 .nft-card img{
- aspect-ratio: 1/1 !important;
+  aspect-ratio: 1/1 !important;
   object-fit: cover;
   object-position: center center;
 }
@@ -108,15 +106,15 @@
     .nft-card p {
         font-size: 0.6rem!important;  /* Adjust creator font size */
         line-height: 1rem;
-      margin-top: 0px;
+        margin-top: 0px;
     }
 }
 @media (max-width: 768px) {
-.nft-card .gradient-overlay {
-   padding-left: 5px;
-  padding-bottom: 5px;
-  padding-right: 5px;
-}
+  .nft-card .gradient-overlay {
+    padding-left: 5px;
+    padding-bottom: 5px;
+    padding-right: 5px;
+  }
 }
 
 .nft-card img{
@@ -133,4 +131,143 @@
   pointer-events: none !important;
   -webkit-filter: drop-shadow(0px 0px 4px #000) !important;
   filter: drop-shadow(0px 0px 4px #000) !important;
+}
+
+/* ===== Modal (Featured-style popup) ===== */
+
+/* Hide state */
+.nft-modal.hidden { display: none !important; }
+
+/* Fullscreen, flex-centered container */
+.nft-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Dim background */
+.nft-modal-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.7) !important;
+}
+
+/* Centered content */
+.nft-modal-content {
+  position: relative !important;
+  max-width: 1100px !important;
+  width: 95% !important;
+  max-height: 90vh !important;
+  margin: 0 auto !important;
+  background: #fff !important;
+  border-radius: 0 !important; /* removed rounded edges */
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.nft-modal-close {
+  position: absolute !important;
+  top: 10px !important;
+  right: 12px !important;
+  font-size: 28px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  z-index: 10 !important;
+}
+
+.nft-modal-body {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+}
+
+/* Media column */
+.modal-artwork-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  aspect-ratio: 1 / 1 !important;
+  flex: 0 0 auto !important;
+  width: 36vw !important;
+  max-width: 600px !important;
+  min-width: 320px !important;
+}
+
+.modal-artwork-container img,
+.modal-artwork-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* Info column */
+.modal-info-container {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 40px !important;
+  overflow: auto !important;
+  max-height: 90vh !important;
+  text-align: left !important; /* left-align on desktop */
+}
+
+#modal-title {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 3rem !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  color: #000 !important;
+}
+
+#modal-artist {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-size: 1.5rem !important;
+  color: #000 !important;
+  margin-top: 20px !important;
+}
+
+/* Responsive modal layout */
+@media (max-width: 1024px) {
+  .nft-modal-body {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .modal-artwork-container {
+    width: 60vw !important;
+    max-width: 600px !important;
+  }
+  .modal-info-container {
+    padding: 20px !important;
+    text-align: center !important; /* center-align on mobile/tablet */
+  }
+  #modal-title {
+    font-size: 2.5rem !important;
+  }
+  #modal-artist {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-artwork-container {
+    width: 100% !important;
+  }
+}
+
+/* Prevent background scroll when modal open */
+body.nft-modal-open {
+  overflow: hidden !important;
 }
