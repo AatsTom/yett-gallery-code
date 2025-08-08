@@ -1,5 +1,31 @@
+<!-- NFT Container -->
 <div id="nft-container">
   <!-- NFTs will be dynamically inserted here -->
+</div>
+
+<!-- Floating Filter Button -->
+<button id="filter-btn" aria-label="Open Filters">🔍</button>
+
+<!-- Filter Drawer -->
+<div id="filter-drawer" class="filter-drawer hidden">
+  <div class="filter-header">
+    <h2>Filter NFTs</h2>
+    <button id="close-filter" aria-label="Close Filters">&times;</button>
+  </div>
+  <div class="filter-body">
+    <label for="filter-artist">Artist</label>
+    <input type="text" id="filter-artist" placeholder="Enter artist name...">
+
+    <label for="filter-title">Title</label>
+    <input type="text" id="filter-title" placeholder="Enter title...">
+
+    <label for="filter-chain">Chain</label>
+    <input type="text" id="filter-chain" placeholder="Enter chain...">
+  </div>
+  <div class="filter-footer">
+    <button id="apply-filters">Apply</button>
+    <button id="clear-filters">Clear</button>
+  </div>
 </div>
 
 <!-- NFT Modal (Featured-style) -->
