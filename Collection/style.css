@@ -267,6 +267,9 @@
   .modal-artwork-container {
     width: 100% !important;
   }
+     #modal-title {
+    text-align: center!important;
+  }
 }
 
 /* Prevent background scroll when modal open */
