@@ -141,6 +141,9 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding-top: 100px !important; /* height of your Divi header */
+  padding-bottom: 20px !important; /* keeps space below too */
+  box-sizing: border-box !important;
 }
 
 /* Dim background */
