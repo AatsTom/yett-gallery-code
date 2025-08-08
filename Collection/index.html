@@ -2,45 +2,42 @@
 <div id="nft-container">
   <!-- NFTs will be dynamically inserted here -->
 </div>
-
-<!-- Floating Filter Button -->
-<button id="filter-btn" aria-label="Open Filters">🔍</button>
-
-<!-- Floating Filter Button -->
-<button id="filter-toggle-btn" aria-label="Open Filters">
+<!-- Filter Toggle Button (bottom-right) -->
+<button id="filter-toggle-btn" class="filter-toggle-btn">
   &#x1F50D; Filter
 </button>
 
 <!-- Filter Drawer -->
-<div id="filter-drawer" class="filter-drawer hidden" aria-hidden="true">
-  <div class="filter-drawer-header">
-    <h2>Filter NFTs</h2>
-    <button id="filter-close-btn" aria-label="Close Filters">&times;</button>
+<div id="filter-drawer" class="filter-drawer hidden">
+  <div class="filter-header">
+    <h3>Filter NFTs</h3>
+    <button id="filter-close-btn" class="filter-close-btn">&times;</button>
   </div>
-  <div class="filter-drawer-body">
-    <label for="filter-artist">Artist</label>
-    <input type="text" id="filter-artist" placeholder="Search artist...">
 
-    <label for="filter-title">Title</label>
-    <input type="text" id="filter-title" placeholder="Search title...">
+  <div class="filter-body">
+    <label for="filter-artist">Artist:</label>
+    <input type="text" id="filter-artist" placeholder="Enter artist name...">
 
-    <label for="filter-chain">Chain</label>
+    <label for="filter-title">Title:</label>
+    <input type="text" id="filter-title" placeholder="Enter NFT title...">
+
+    <label for="filter-chain">Chain:</label>
     <select id="filter-chain">
       <option value="">All Chains</option>
       <option value="Ethereum">Ethereum</option>
-      <option value="Solana">Solana</option>
-      <option value="Tezos">Tezos</option>
-      <option value="Bitcoin">Bitcoin / Ordinals</option>
+      <option value="Polygon">Polygon</option>
       <option value="Base">Base</option>
-      <option value="Matic">Polygon / Matic</option>
       <option value="Zora">Zora</option>
       <option value="Optimism">Optimism</option>
+      <option value="Tezos">Tezos</option>
+      <option value="Solana">Solana</option>
+      <option value="Bitcoin">Bitcoin</option>
     </select>
+  </div>
 
-    <div class="filter-actions">
-      <button id="apply-filters">Apply Filters</button>
-      <button id="clear-filters">Clear Filters</button>
-    </div>
+  <div class="filter-footer">
+    <button id="apply-filters" class="apply-btn">Apply Filters</button>
+    <button id="clear-filters" class="clear-btn">Clear</button>
   </div>
 </div>
 
