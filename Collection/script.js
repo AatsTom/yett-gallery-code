@@ -18,6 +18,8 @@ let itemsPerPage = calculateItemsPerPage();
 let totalNFTs    = [];
 let modifiedNFTs = {};
 
+const BUNNY_PULL_ZONE = window.BUNNY_PULL_ZONE || '';
+
 function calculateItemsPerPage() {
   const nftCardWidth = isMobileDevice() ? 100 : 250;
   const cols = Math.floor(window.innerWidth / nftCardWidth);
@@ -27,6 +29,18 @@ function calculateItemsPerPage() {
 
 function isMobileDevice() {
   return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+function getBunnyPlaybackUrl(nft, quality) {
+  if (!nft) return '';
+  if (nft.bunnyVideoUrl) return nft.bunnyVideoUrl;
+  if (!nft.bunnyVideoId) return '';
+
+  const zone = nft.bunnyPullZone || BUNNY_PULL_ZONE;
+  if (!zone) return '';
+
+  const qualitySuffix = quality ? `play_${quality}.mp4` : 'play.mp4';
+  return `https://${zone}.b-cdn.net/${nft.bunnyVideoId}/${qualitySuffix}`;
 }
 
 function optimizeImageUrl(url) {
@@ -84,7 +98,7 @@ const displayNFTs = (page) => {
     // 3) then force width
     placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_350/');
 
-    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, name);
+    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, name, nft);
 
     card.innerHTML = `
       <div style="position:relative;">
@@ -109,8 +123,35 @@ const displayNFTs = (page) => {
  * - If placeholder is a video, show it muted+autoplay as a preview.
  * - Any click on the card opens the modal.
  */
-async function createMediaElement(mediaUrl, placeholderUrl, nftName) {
+async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft) {
   try {
+    const bunnyPreviewUrl = getBunnyPlaybackUrl(nft, '480p');
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+
+    if (bunnyFullUrl) {
+      const previewVideoUrl = bunnyPreviewUrl || placeholderUrl;
+      if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
+        return `
+          <video muted autoplay playsinline
+                 style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
+            <source src="${previewVideoUrl}" type="video/mp4">
+            <img src="${placeholderUrl}" alt="${nftName}">
+          </video>
+          <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+               class="play-button-icon" alt="Play">
+        `;
+      }
+
+      return `
+        <div style="position:relative;">
+          <img src="${placeholderUrl}" alt="${nftName}"
+               style="max-width:100%;">
+          <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+               class="play-button-icon" alt="Play">
+        </div>
+      `;
+    }
+
     const headResp    = await fetch(mediaUrl, { method: 'HEAD' });
     const contentType = headResp.headers.get('Content-Type') || '';
 
@@ -186,8 +227,20 @@ function optimizeImageUrl600(url) {
  * - Always shows the full video immediately (autoplay).
  * - No play overlay in the modal.
  */
-async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName) {
+async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName, nft) {
   try {
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+
+    if (bunnyFullUrl) {
+      const autoMute = isMobileDevice() ? 'muted' : '';
+      return `
+        <video ${autoMute} autoplay controls playsinline poster="${placeholderUrl}"
+               style="width:100%;height:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">
+          <source src="${bunnyFullUrl}" type="video/mp4">
+        </video>
+      `;
+    }
+
     const headResp    = await fetch(mediaUrl, { method: 'HEAD' });
     const contentType = headResp.headers.get('Content-Type') || '';
 
@@ -199,7 +252,7 @@ async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName) {
       const autoMute = isMobileDevice() ? 'muted' : ''; // mobile often requires muted for autoplay
 
       return `
-        <video ${autoMute} autoplay controls playsinline
+        <video ${autoMute} autoplay controls playsinline poster="${placeholderUrl}"
                style="width:100%;height:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">
           <source src="${optimizedMediaUrl}" type="video/mp4">
         </video>
@@ -228,7 +281,7 @@ async function openNftModal(nft) {
   placeholderUrl     = normalizePlaceholderUrl(placeholderUrl);
   placeholderUrl     = placeholderUrl.replace('/upload/', '/upload/w_600/');
 
-  mediaWrap.innerHTML = await createMediaElementForModal(mediaUrl, placeholderUrl, nft.name || '');
+  mediaWrap.innerHTML = await createMediaElementForModal(mediaUrl, placeholderUrl, nft.name || '', nft);
 
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
