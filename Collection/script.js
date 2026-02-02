@@ -268,11 +268,24 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeNftModal();
 });
 
-(async function init() {
+async function initGallery() {
+  const container = document.getElementById('nft-container');
+  const modal = document.getElementById('nft-modal');
+  if (!container || !modal) {
+    console.error('NFT gallery: missing required HTML (#nft-container and #nft-modal).');
+    return;
+  }
+
   await fetchOriginalNFTs();
   await fetchModifiedNFTs();
   mergeNFTData();
   totalNFTs.sort(() => 0.5 - Math.random());
   displayNFTs(currentPage);
   window.addEventListener('scroll', handleScroll);
-})();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGallery);
+} else {
+  initGallery();
+}
