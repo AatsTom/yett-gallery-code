@@ -181,9 +181,16 @@ function optimizeImageUrl600(url) {
   }
 }
 
+function optimizeVideoUrl(url, width) {
+  if (url.includes('cloudinary.com')) {
+    return url.replace('/upload/', `/upload/q_auto:low,f_auto,w_${width}/`);
+  }
+  return url;
+}
+
 /**
  * Modal media element:
- * - Always shows the full video immediately (autoplay).
+ * - Autoplay on desktop; metadata-only load on mobile to avoid heavy downloads.
  * - No play overlay in the modal.
  */
 async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName) {
@@ -195,11 +202,16 @@ async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName) {
       if (mediaUrl.endsWith('.mov')) {
         mediaUrl = mediaUrl.replace('.mov', '.mp4');
       }
-      const optimizedMediaUrl = mediaUrl.replace('/upload/', '/upload/w_600/');
-      const autoMute = isMobileDevice() ? 'muted' : ''; // mobile often requires muted for autoplay
+      const isMobile = isMobileDevice();
+      const targetWidth = isMobile ? 480 : 800;
+      const optimizedMediaUrl = optimizeVideoUrl(mediaUrl.replace('/upload/', `/upload/w_${targetWidth}/`), targetWidth);
+      const autoMute = isMobile ? 'muted' : '';
+      const autoPlay = isMobile ? '' : 'autoplay';
+      const preload = isMobile ? 'preload="metadata"' : 'preload="auto"';
+      const posterAttr = placeholderUrl ? `poster="${placeholderUrl}"` : '';
 
       return `
-        <video ${autoMute} autoplay controls playsinline
+        <video ${autoMute} ${autoPlay} controls playsinline ${preload} ${posterAttr}
                style="width:100%;height:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">
           <source src="${optimizedMediaUrl}" type="video/mp4">
         </video>
