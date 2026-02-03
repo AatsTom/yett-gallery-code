@@ -12,9 +12,9 @@ on:
         required: true
         default: "main"
       data_path:
-        description: "Path to the NFT JSON file in the private repo (e.g. nftData.json)"
+        description: "Path to the NFT JSON file in the private repo (e.g. modifiedNFTData.json)"
         required: true
-        default: "nftData.json"
+        default: "modifiedNFTData.json"
       limit:
         description: "Optional limit of how many NFTs to process (0 = no limit)"
         required: false

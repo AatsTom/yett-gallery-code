@@ -25,7 +25,7 @@ You can also run the uploader from GitHub Actions without committing secrets:
    - `BUNNY_PULL_ZONE` (optional)
    - `NFT_DATA_REPO` (example: `youruser/your-private-nft-repo`)
    - `NFT_DATA_REF` (example: `main`)
-   - `NFT_DATA_PATH` (example: `nftData.json`)
+   - `NFT_DATA_PATH` (example: `modifiedNFTData.json`)
    - `NFT_DATA_REPO_TOKEN` (a GitHub token with access to the private repo)
 3. Go to **Actions** → **Upload NFT videos to Bunny Stream** → **Run workflow**.
 4. Enter the private repo + JSON path (or rely on secrets) and run.
