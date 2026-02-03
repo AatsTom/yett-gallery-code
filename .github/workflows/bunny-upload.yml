@@ -3,18 +3,24 @@ name: Upload NFT videos to Bunny Stream
 on:
   workflow_dispatch:
     inputs:
-      input_path:
-        description: "Path to the NFT JSON file in the repo (e.g. nftData.json)"
+      data_repo:
+        description: "Owner/repo for the private NFT data (e.g. myuser/nft-data)"
         required: true
-        default: "nftData.json"
-      output_path:
-        description: "Path to write the updated JSON file"
+        default: ""
+      data_ref:
+        description: "Branch or tag in the private NFT data repo"
+        required: true
+        default: "main"
+      data_path:
+        description: "Path to the NFT JSON file in the private repo (e.g. nftData.json)"
         required: true
         default: "nftData.json"
       limit:
         description: "Optional limit of how many NFTs to process (0 = no limit)"
         required: false
         default: "0"
+  schedule:
+    - cron: "0 2 * * *"
 
 jobs:
   bunny-upload:
@@ -22,8 +28,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Check out repository
+      - name: Check out website repository
         uses: actions/checkout@v4
+
+      - name: Check out private NFT data repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.data_repo || secrets.NFT_DATA_REPO }}
+          ref: ${{ inputs.data_ref || secrets.NFT_DATA_REF }}
+          token: ${{ secrets.NFT_DATA_REPO_TOKEN }}
+          path: data-repo
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -37,18 +51,19 @@ jobs:
           BUNNY_PULL_ZONE: ${{ secrets.BUNNY_PULL_ZONE }}
         run: |
           node scripts/bunny-upload.js \
-            --input "${{ inputs.input_path }}" \
-            --output "${{ inputs.output_path }}" \
+            --input "data-repo/${{ inputs.data_path || secrets.NFT_DATA_PATH }}" \
+            --output "data-repo/${{ inputs.data_path || secrets.NFT_DATA_PATH }}" \
             --limit "${{ inputs.limit }}"
 
-      - name: Commit updated JSON (if changed)
+      - name: Commit updated JSON to data repo (if changed)
         run: |
+          cd data-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if git diff --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git add "${{ inputs.output_path }}"
+          git add "${{ inputs.data_path || secrets.NFT_DATA_PATH }}"
           git commit -m "Update NFT metadata with Bunny video IDs"
           git push
