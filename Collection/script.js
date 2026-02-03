@@ -90,6 +90,10 @@ const displayNFTs = (page) => {
     const name      = nft.name;
     const creator   = nft.creator;
     let mediaUrl    = optimizeImageUrl(nft.imageUrl);
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+    if (bunnyFullUrl) {
+      mediaUrl = bunnyFullUrl;
+    }
 
     // 1) optimize placeholder
     let placeholderUrl = optimizeImageUrl(nft.placeholder);
@@ -277,6 +281,10 @@ async function openNftModal(nft) {
   artistEl.textContent = nft.creator || '';
 
   let mediaUrl       = optimizeImageUrl600(nft.imageUrl || '');
+  const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+  if (bunnyFullUrl) {
+    mediaUrl = bunnyFullUrl;
+  }
   let placeholderUrl = optimizeImageUrl600(nft.placeholder || '');
   placeholderUrl     = normalizePlaceholderUrl(placeholderUrl);
   placeholderUrl     = placeholderUrl.replace('/upload/', '/upload/w_600/');

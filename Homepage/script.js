@@ -175,6 +175,10 @@ async function displayFeaturedArtwork() {
   document.getElementById('featured-artist').textContent = nft.creator;
 
   let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+  const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+  if (bunnyFullUrl) {
+    mediaUrl = bunnyFullUrl;
+  }
   let placeholderUrl = optimizeImageUrl(nft.placeholder);
 
   placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
@@ -194,6 +198,10 @@ async function displayRandomGallery() {
     nftCard.classList.add('nft-card');
 
     let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+    if (bunnyFullUrl) {
+      mediaUrl = bunnyFullUrl;
+    }
     let placeholderUrl = optimizeImageUrl(nft.placeholder);
 
     placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
