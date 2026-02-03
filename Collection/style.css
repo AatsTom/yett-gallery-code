@@ -155,6 +155,21 @@
   cursor: pointer;
 }
 
+.collection-field-reset {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
+  font-family: "Outfit", sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.collection-field-reset:hover {
+  color: rgba(0, 0, 0, 0.85);
+}
+
 /* Container for NFT cards */
 #nft-container {
     display: grid;

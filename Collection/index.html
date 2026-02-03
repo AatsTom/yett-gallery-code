@@ -16,18 +16,21 @@
       placeholder="Search artist, chain, or title"
       autocomplete="off"
     />
+    <button class="collection-field-reset" type="button" data-reset-target="collection-search">Reset search</button>
   </div>
   <div class="collection-filter">
     <label for="artist-filter">Artist</label>
     <select id="artist-filter">
       <option value="all">All artists</option>
     </select>
+    <button class="collection-field-reset" type="button" data-reset-target="artist-filter">Reset artist</button>
   </div>
   <div class="collection-filter">
     <label for="chain-filter">Chain</label>
     <select id="chain-filter">
       <option value="all">All chains</option>
     </select>
+    <button class="collection-field-reset" type="button" data-reset-target="chain-filter">Reset chain</button>
   </div>
   <div class="collection-filter">
     <label for="media-filter">Media</label>
@@ -37,6 +40,7 @@
       <option value="video">Videos</option>
       <option value="gif">GIFs</option>
     </select>
+    <button class="collection-field-reset" type="button" data-reset-target="media-filter">Reset media</button>
   </div>
   <button class="collection-reset" type="button">Reset filters</button>
 </div>

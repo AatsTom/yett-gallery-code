@@ -387,6 +387,7 @@ function registerFilterListeners() {
   const chainSelect = document.getElementById('chain-filter');
   const mediaSelect = document.getElementById('media-filter');
   const resetButton = document.querySelector('.collection-reset');
+  const fieldResetButtons = document.querySelectorAll('.collection-field-reset');
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
@@ -417,6 +418,20 @@ function registerFilterListeners() {
       applyFilters();
     });
   }
+  fieldResetButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-reset-target');
+      if (!targetId) return;
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      if (target.tagName === 'SELECT') {
+        target.value = 'all';
+      } else {
+        target.value = '';
+      }
+      applyFilters();
+    });
+  });
   registerFilterPanelListeners();
 }
 
