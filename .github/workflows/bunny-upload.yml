@@ -1,0 +1,54 @@
+name: Upload NFT videos to Bunny Stream
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_path:
+        description: "Path to the NFT JSON file in the repo (e.g. nftData.json)"
+        required: true
+        default: "nftData.json"
+      output_path:
+        description: "Path to write the updated JSON file"
+        required: true
+        default: "nftData.json"
+      limit:
+        description: "Optional limit of how many NFTs to process (0 = no limit)"
+        required: false
+        default: "0"
+
+jobs:
+  bunny-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Bunny uploader
+        env:
+          BUNNY_LIBRARY_ID: ${{ secrets.BUNNY_LIBRARY_ID }}
+          BUNNY_ACCESS_KEY: ${{ secrets.BUNNY_ACCESS_KEY }}
+          BUNNY_PULL_ZONE: ${{ secrets.BUNNY_PULL_ZONE }}
+        run: |
+          node scripts/bunny-upload.js \
+            --input "${{ inputs.input_path }}" \
+            --output "${{ inputs.output_path }}" \
+            --limit "${{ inputs.limit }}"
+
+      - name: Commit updated JSON (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git add "${{ inputs.output_path }}"
+          git commit -m "Update NFT metadata with Bunny video IDs"
+          git push
