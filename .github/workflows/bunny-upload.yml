@@ -1,0 +1,69 @@
+name: Upload NFT videos to Bunny Stream
+
+on:
+  workflow_dispatch:
+    inputs:
+      data_repo:
+        description: "Owner/repo for the private NFT data (e.g. myuser/nft-data)"
+        required: true
+        default: ""
+      data_ref:
+        description: "Branch or tag in the private NFT data repo"
+        required: true
+        default: "main"
+      data_path:
+        description: "Path to the NFT JSON file in the private repo (e.g. modifiedNFTData.json)"
+        required: true
+        default: "modifiedNFTData.json"
+      limit:
+        description: "Optional limit of how many NFTs to process (0 = no limit)"
+        required: false
+        default: "0"
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  bunny-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out website repository
+        uses: actions/checkout@v4
+
+      - name: Check out private NFT data repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.data_repo || secrets.NFT_DATA_REPO }}
+          ref: ${{ inputs.data_ref || secrets.NFT_DATA_REF }}
+          token: ${{ secrets.NFT_DATA_REPO_TOKEN }}
+          path: data-repo
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Bunny uploader
+        env:
+          BUNNY_LIBRARY_ID: ${{ secrets.BUNNY_LIBRARY_ID }}
+          BUNNY_ACCESS_KEY: ${{ secrets.BUNNY_ACCESS_KEY }}
+          BUNNY_PULL_ZONE: ${{ secrets.BUNNY_PULL_ZONE }}
+        run: |
+          node scripts/bunny-upload.js \
+            --input "data-repo/${{ inputs.data_path || secrets.NFT_DATA_PATH }}" \
+            --output "data-repo/${{ inputs.data_path || secrets.NFT_DATA_PATH }}" \
+            --limit "${{ inputs.limit }}"
+
+      - name: Commit updated JSON to data repo (if changed)
+        run: |
+          cd data-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git add "${{ inputs.data_path || secrets.NFT_DATA_PATH }}"
+          git commit -m "Update NFT metadata with Bunny video IDs"
+          git push
