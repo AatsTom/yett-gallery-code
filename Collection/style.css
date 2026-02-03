@@ -170,6 +170,10 @@
   color: rgba(0, 0, 0, 0.85);
 }
 
+.collection-field-reset.is-hidden {
+  display: none;
+}
+
 /* Container for NFT cards */
 #nft-container {
     display: grid;
