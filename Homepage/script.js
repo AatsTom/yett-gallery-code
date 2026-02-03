@@ -16,8 +16,22 @@ function normalizePlaceholderUrl(url) {
 let totalNFTs    = [];
 let modifiedNFTs = {};
 
+const BUNNY_PULL_ZONE = window.BUNNY_PULL_ZONE || '';
+
 function isMobileDevice() {
   return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+function getBunnyPlaybackUrl(nft, quality) {
+  if (!nft) return '';
+  if (nft.bunnyVideoUrl) return nft.bunnyVideoUrl;
+  if (!nft.bunnyVideoId) return '';
+
+  const zone = nft.bunnyPullZone || BUNNY_PULL_ZONE;
+  if (!zone) return '';
+
+  const qualitySuffix = quality ? `play_${quality}.mp4` : 'play.mp4';
+  return `https://${zone}.b-cdn.net/${nft.bunnyVideoId}/${qualitySuffix}`;
 }
 
 function optimizeImageUrl(url) {
@@ -66,8 +80,41 @@ function loadFullVideo(element, mediaUrl, extension) {
   element.remove();
 }
 
-async function createMediaElement(mediaUrl, placeholderUrl, nftName) {
+async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft) {
   try {
+    const bunnyPreviewUrl = getBunnyPlaybackUrl(nft, '480p');
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+
+    if (bunnyFullUrl) {
+      const autoAttr = isMobileDevice() ? 'autoplay' : '';
+      const previewVideoUrl = bunnyPreviewUrl || placeholderUrl;
+      if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
+        return `
+          <video muted ${autoAttr} playsinline
+                 style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
+            <source src="${previewVideoUrl}" type="video/mp4">
+            <img src="${placeholderUrl}" alt="${nftName}">
+          </video>
+          <div class="click-to-load"
+               style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;"
+               onclick="loadFullVideo(this,'${bunnyFullUrl}','mp4')">
+            <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+                 class="play-button-icon" alt="Play Icon">
+          </div>
+        `;
+      }
+
+      return `
+        <div style="position:relative;">
+          <img src="${placeholderUrl}" alt="${nftName}"
+               style="max-width:100%;cursor:pointer;"
+               onclick="this.nextElementSibling.remove(); this.outerHTML = '<video controls autoplay playsinline style=\\'max-width:100%;aspect-ratio:1/1;object-fit:contain;object-position:center;\\'><source src=\\'${bunnyFullUrl}\\' type=\\'video/mp4\\'></video>'">
+          <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+               class="play-button-icon" alt="Play Icon">
+        </div>
+      `;
+    }
+
     const headResp    = await fetch(mediaUrl, { method: 'HEAD' });
     const contentType = headResp.headers.get('Content-Type') || '';
 
@@ -128,12 +175,16 @@ async function displayFeaturedArtwork() {
   document.getElementById('featured-artist').textContent = nft.creator;
 
   let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+  const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+  if (bunnyFullUrl) {
+    mediaUrl = bunnyFullUrl;
+  }
   let placeholderUrl = optimizeImageUrl(nft.placeholder);
 
   placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
   placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_600/');
 
-  featuredContainer.innerHTML = await createMediaElement(mediaUrl, placeholderUrl, nft.name);
+  featuredContainer.innerHTML = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft);
 }
 
 // Display 8 random artworks in gallery
@@ -147,12 +198,16 @@ async function displayRandomGallery() {
     nftCard.classList.add('nft-card');
 
     let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+    if (bunnyFullUrl) {
+      mediaUrl = bunnyFullUrl;
+    }
     let placeholderUrl = optimizeImageUrl(nft.placeholder);
 
     placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
     placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_600/');
 
-    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name);
+    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft);
 
     nftCard.innerHTML = `
       <div style="position:relative;">
