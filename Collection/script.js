@@ -110,10 +110,15 @@ const displayNFTs = (page, list) => {
     placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_350/');
 
     const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, name, nft);
+    const chainIcon = getChainIconData(nft);
+    const chainIconMarkup = chainIcon
+      ? `<img src="${chainIcon.url}" class="chain-icon" alt="${chainIcon.label} chain">`
+      : '';
 
     card.innerHTML = `
       <div style="position:relative;">
         ${mediaElement}
+        ${chainIconMarkup}
         <div class="gradient-overlay">
           <h2>${name}</h2>
           <p>${creator}</p>
@@ -238,6 +243,54 @@ function formatChainLabel(chainValue) {
     .filter(Boolean)
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+function getChainIconData(nft) {
+  const chain = normalizeChainValue(getChainValue(nft));
+  const chainMap = {
+    base: {
+      label: 'Base',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Base.png'
+    },
+    ordinals: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    bitcoin: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    ethereum: {
+      label: 'Ethereum',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Ethereum.png'
+    },
+    matic: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    polygon: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    optimism: {
+      label: 'Optimism',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Optimism.png'
+    },
+    solana: {
+      label: 'Solana',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Solana.png'
+    },
+    tezos: {
+      label: 'Tezos',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Tezos.png'
+    },
+    zora: {
+      label: 'Zora',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Zora.png'
+    }
+  };
+
+  return chainMap[chain] || null;
 }
 
 function getMediaType(nft) {

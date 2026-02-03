@@ -47,6 +47,62 @@ function optimizeImageUrl(url, width = 600) {
   }
 }
 
+function getChainValue(nft) {
+  return (nft.chain || nft.blockchain || nft.network || '').trim();
+}
+
+function normalizeChainValue(chainValue) {
+  return chainValue.trim().toLowerCase();
+}
+
+function getChainIconData(nft) {
+  const chain = normalizeChainValue(getChainValue(nft));
+  const chainMap = {
+    base: {
+      label: 'Base',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Base.png'
+    },
+    ordinals: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    bitcoin: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    ethereum: {
+      label: 'Ethereum',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Ethereum.png'
+    },
+    matic: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    polygon: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    optimism: {
+      label: 'Optimism',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Optimism.png'
+    },
+    solana: {
+      label: 'Solana',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Solana.png'
+    },
+    tezos: {
+      label: 'Tezos',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Tezos.png'
+    },
+    zora: {
+      label: 'Zora',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Zora.png'
+    }
+  };
+
+  return chainMap[chain] || null;
+}
+
 async function fetchModifiedNFTs() {
   const fileUrl  = 'https://api.github.com/repos/AatsTom/nft-collection-backend/contents/modifiedNFTData.json';
   const resp     = await fetch(`/wp-json/nft/v1/fetch-data?url=${encodeURIComponent(fileUrl)}`);
@@ -165,7 +221,18 @@ async function displayFeaturedArtwork() {
   placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
   placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_600/');
 
-  featuredContainer.innerHTML = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 600);
+  const chainIcon = getChainIconData(nft);
+  const chainIconMarkup = chainIcon
+    ? `<img src="${chainIcon.url}" class="chain-icon" alt="${chainIcon.label} chain">`
+    : '';
+  const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 600);
+
+  featuredContainer.innerHTML = `
+    <div style="position:relative;">
+      ${mediaElement}
+      ${chainIconMarkup}
+    </div>
+  `;
   featuredContainer.onclick = () => openNftModal(nft);
 }
 
@@ -191,9 +258,15 @@ async function displayRandomGallery() {
 
     const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 350);
 
+    const chainIcon = getChainIconData(nft);
+    const chainIconMarkup = chainIcon
+      ? `<img src="${chainIcon.url}" class="chain-icon" alt="${chainIcon.label} chain">`
+      : '';
+
     nftCard.innerHTML = `
       <div style="position:relative;">
         ${mediaElement}
+        ${chainIconMarkup}
         <div class="gradient-overlay">
           <h2>${nft.name}</h2>
           <p>${nft.creator}</p>
