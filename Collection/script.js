@@ -217,7 +217,6 @@ function handleScroll() {
 
 window.addEventListener('resize', () => {
   itemsPerPage = calculateItemsPerPage();
-  applyFilters();
 });
 
 function getArtistValue(nft) {
@@ -263,43 +262,63 @@ function populateFilterOptions() {
   const chainSelect = document.getElementById('chain-filter');
   if (!artistSelect || !chainSelect) return;
 
-  const artists = new Set();
+  const artists = new Map();
   const chains = new Map();
+  const mediaCounts = new Map();
+  let visibleTotal = 0;
 
   totalNFTs.forEach((nft) => {
+    if (nft.hidden) return;
+    visibleTotal += 1;
     const artist = getArtistValue(nft);
     const chain = getChainValue(nft);
-    if (artist) artists.add(artist);
+    const mediaType = getMediaType(nft);
+    if (artist) {
+      artists.set(artist, (artists.get(artist) || 0) + 1);
+    }
     if (chain) {
       const normalized = normalizeChainValue(chain);
       if (!chains.has(normalized)) {
-        chains.set(normalized, formatChainLabel(chain));
+        chains.set(normalized, { label: formatChainLabel(chain), count: 0 });
       }
+      chains.get(normalized).count += 1;
     }
+    mediaCounts.set(mediaType, (mediaCounts.get(mediaType) || 0) + 1);
   });
 
-  const sortedArtists = Array.from(artists).sort((a, b) => a.localeCompare(b));
-  const sortedChains = Array.from(chains.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  const sortedArtists = Array.from(artists.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedChains = Array.from(chains.entries()).sort((a, b) => a[1].label.localeCompare(b[1].label));
 
-  artistSelect.innerHTML = '<option value="all">All artists</option>';
-  chainSelect.innerHTML = '<option value="all">All chains</option>';
+  artistSelect.innerHTML = `<option value="all">All artists (${visibleTotal})</option>`;
+  chainSelect.innerHTML = `<option value="all">All chains (${visibleTotal})</option>`;
 
-  sortedArtists.forEach((artist) => {
+  sortedArtists.forEach(([artist, count]) => {
     const option = document.createElement('option');
     option.value = artist;
-    option.textContent = artist;
+    option.textContent = `${artist} (${count})`;
     artistSelect.appendChild(option);
   });
 
-  sortedChains.forEach(([normalized, label]) => {
+  sortedChains.forEach(([normalized, data]) => {
     const option = document.createElement('option');
     option.value = normalized;
-    option.textContent = label;
+    option.textContent = `${data.label} (${data.count})`;
     chainSelect.appendChild(option);
   });
 
+  const mediaSelect = document.getElementById('media-filter');
+  if (mediaSelect) {
+    mediaSelect.innerHTML = `
+      <option value="all">All media (${visibleTotal})</option>
+      <option value="image">Images (${mediaCounts.get('image') || 0})</option>
+      <option value="video">Videos (${mediaCounts.get('video') || 0})</option>
+      <option value="gif">GIFs (${mediaCounts.get('gif') || 0})</option>
+    `;
+  }
+
   artistSelect.value = activeFilters.artist;
   chainSelect.value = activeFilters.chain;
+  if (mediaSelect) mediaSelect.value = activeFilters.media;
 }
 
 function applyFilters() {
@@ -349,6 +368,12 @@ function applyFilters() {
   const container = document.getElementById('nft-container');
   if (container) container.innerHTML = '';
   displayNFTs(currentPage, filteredNFTs);
+
+  const filterCount = document.getElementById('collection-filters-count');
+  if (filterCount) {
+    const totalVisible = totalNFTs.filter((nft) => !nft.hidden).length;
+    filterCount.textContent = `Showing ${filteredNFTs.length} of ${totalVisible}`;
+  }
 
   window.removeEventListener('scroll', handleScroll);
   if (currentPage * itemsPerPage < filteredNFTs.length) {
