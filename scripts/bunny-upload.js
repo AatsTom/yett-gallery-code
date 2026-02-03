@@ -97,6 +97,26 @@ async function createBunnyVideo(title) {
   return data.guid;
 }
 
+function getMediaBasename(mediaUrl) {
+  if (!mediaUrl) return '';
+  try {
+    const url = new URL(mediaUrl);
+    return path.basename(url.pathname || '');
+  } catch (error) {
+    return path.basename(mediaUrl);
+  }
+}
+
+function getBunnyTitle(nft, mediaUrl) {
+  const rawTitle = (nft?.name || '').trim();
+  if (rawTitle) return rawTitle;
+
+  const basename = getMediaBasename(mediaUrl).trim();
+  if (basename) return basename;
+
+  return 'Untitled video';
+}
+
 async function uploadVideoToBunny(videoId, buffer) {
   const response = await fetch(`https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`, {
     method: 'PUT',
@@ -136,10 +156,11 @@ async function processNft(nft) {
   const isVideo = isVideoUrl(mediaUrl) || await isVideoByHead(mediaUrl);
   if (!isVideo) return { updated: false, uploaded: false };
 
-  console.log(`Uploading: ${nft.name || mediaUrl}`);
+  const bunnyTitle = getBunnyTitle(nft, mediaUrl);
+  console.log(`Uploading: ${bunnyTitle}`);
   let videoId;
   try {
-    videoId = await createBunnyVideo(nft.name || path.basename(mediaUrl));
+    videoId = await createBunnyVideo(bunnyTitle);
   } catch (error) {
     console.warn(`Skipping ${mediaUrl} (create failed: ${error.message || error})`);
     return { updated: false, uploaded: false };
