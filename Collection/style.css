@@ -1,4 +1,29 @@
 /* Title styling */
+@font-face {
+  font-family: "Dashicons";
+  src: url("https://s.w.org/wp-includes/fonts/dashicons.woff2") format("woff2"),
+       url("https://s.w.org/wp-includes/fonts/dashicons.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.dashicons {
+  font-family: "Dashicons";
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dashicons-filter::before {
+  content: "\f536";
+}
+
 #page-title {
     position: fixed;  /* Make the title fixed */
     top: 0;  /* Stick to the top */
