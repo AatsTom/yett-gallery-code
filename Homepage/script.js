@@ -15,6 +15,7 @@ function normalizePlaceholderUrl(url) {
 
 let totalNFTs    = [];
 let modifiedNFTs = {};
+let featuredNFT  = null;
 
 const BUNNY_PULL_ZONE = window.BUNNY_PULL_ZONE || '';
 
@@ -34,11 +35,11 @@ function getBunnyPlaybackUrl(nft, quality) {
   return `https://${zone}.b-cdn.net/${nft.bunnyVideoId}/${qualitySuffix}`;
 }
 
-function optimizeImageUrl(url) {
+function optimizeImageUrl(url, width = 600) {
   if (url.includes('seadn.io')) {
-    return url.replace(/\?.*$/, '') + '?w=600&auto=format';
+    return url.replace(/\?.*$/, '') + `?w=${width}&auto=format`;
   } else if (url.includes('cloudinary.com')) {
-    return url.replace('/upload/', '/upload/w_600/');
+    return url.replace('/upload/', `/upload/w_${width}/`);
   } else if (url.includes('ipfs.io')) {
     return url.replace('ipfs.io', 'dweb.link');
   } else {
@@ -70,47 +71,31 @@ function mergeNFTData() {
   });
 }
 
-function loadFullVideo(element, mediaUrl, extension) {
-  const videoContainer = element.previousElementSibling;
-  videoContainer.outerHTML = `
-    <video controls autoplay playsinline
-           style="max-width:100%;aspect-ratio:1/1;object-fit:contain;object-position:center;">
-      <source src="${mediaUrl}" type="video/mp4">
-    </video>`;
-  element.remove();
-}
-
-async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft) {
+async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft, targetWidth = 600) {
   try {
     const bunnyPreviewUrl = getBunnyPlaybackUrl(nft, '480p');
     const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
 
     if (bunnyFullUrl) {
-      const autoAttr = isMobileDevice() ? 'autoplay' : '';
       const previewVideoUrl = bunnyPreviewUrl || placeholderUrl;
       if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
         return `
-          <video muted ${autoAttr} playsinline
+          <video muted autoplay playsinline
                  style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
             <source src="${previewVideoUrl}" type="video/mp4">
             <img src="${placeholderUrl}" alt="${nftName}">
           </video>
-          <div class="click-to-load"
-               style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;"
-               onclick="loadFullVideo(this,'${bunnyFullUrl}','mp4')">
-            <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
-                 class="play-button-icon" alt="Play Icon">
-          </div>
+          <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+               class="play-button-icon" alt="Play">
         `;
       }
 
       return `
         <div style="position:relative;">
           <img src="${placeholderUrl}" alt="${nftName}"
-               style="max-width:100%;cursor:pointer;"
-               onclick="this.nextElementSibling.remove(); this.outerHTML = '<video controls autoplay playsinline style=\\'max-width:100%;aspect-ratio:1/1;object-fit:contain;object-position:center;\\'><source src=\\'${bunnyFullUrl}\\' type=\\'video/mp4\\'></video>'">
+               style="max-width:100%;">
           <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
-               class="play-button-icon" alt="Play Icon">
+               class="play-button-icon" alt="Play">
         </div>
       `;
     }
@@ -118,47 +103,42 @@ async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft) {
     const headResp    = await fetch(mediaUrl, { method: 'HEAD' });
     const contentType = headResp.headers.get('Content-Type') || '';
 
-    if (contentType.includes('video')) {
-      // always use mp4
+    if (contentType.startsWith('video')) {
+      // normalize to mp4 for playback reliability
       if (mediaUrl.endsWith('.mov')) {
         mediaUrl = mediaUrl.replace('.mov', '.mp4');
       }
-      const optimizedMediaUrl = mediaUrl.replace('/upload/', '/upload/w_600/');
-      const autoAttr = isMobileDevice() ? 'autoplay' : '';
+      const optimizedMediaUrl = mediaUrl.replace('/upload/', `/upload/w_${targetWidth}/`);
 
+      // placeholder itself is a video -> preview silently
       if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
         return `
-          <video muted ${autoAttr} playsinline
+          <video muted autoplay playsinline
                  style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
             <source src="${placeholderUrl}" type="video/mp4">
-            <img src="${mediaUrl}" alt="${nftName}">
+            <img src="${optimizedMediaUrl}" alt="${nftName}">
           </video>
-          <div class="click-to-load"
-               style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;"
-               onclick="loadFullVideo(this,'${optimizedMediaUrl}','mp4')">
-            <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
-                 class="play-button-icon" alt="Play Icon">
-          </div>
+          <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
+               class="play-button-icon" alt="Play">
         `;
       }
 
+      // placeholder is an image (static preview only)
       return `
         <div style="position:relative;">
           <img src="${placeholderUrl}" alt="${nftName}"
-               style="max-width:100%;cursor:pointer;"
-               onclick="this.nextElementSibling.remove(); this.outerHTML = '<video controls autoplay playsinline style=\\'max-width:100%;aspect-ratio:1/1;object-fit:contain;object-position:center;\\'><source src=\\'${optimizedMediaUrl}\\' type=\\'video/mp4\\'></video>'">
+               style="max-width:100%;">
           <img src="https://www.yett.gallery/wp-content/uploads/2024/12/play-button-icon-white.png"
-               class="play-button-icon" alt="Play Icon">
+               class="play-button-icon" alt="Play">
         </div>
       `;
     }
   } catch (e) {
-    console.error('Error fetching media type:', e);
+    console.error(e);
   }
 
   // fallback to image
-  return `<img src="${placeholderUrl}" alt="${nftName}" loading="lazy"
-               style="max-width:100%;object-fit:cover;object-position:center;aspect-ratio:1/1;">`;
+  return `<img src="${placeholderUrl}" alt="${nftName}" loading="lazy" style="max-width:100%;">`;
 }
 
 // Display featured artwork (prefer pinned, else random)
@@ -167,24 +147,26 @@ async function displayFeaturedArtwork() {
   if (!visibleNFTs.length) return;
 
   // prefer the pinned/featured NFT if one exists
-  const featuredNFT = visibleNFTs.find(n => n.featured === true);
-  const nft = featuredNFT || visibleNFTs[Math.floor(Math.random() * visibleNFTs.length)];
+  const preferredNFT = visibleNFTs.find(n => n.featured === true);
+  const nft = preferredNFT || visibleNFTs[Math.floor(Math.random() * visibleNFTs.length)];
+  featuredNFT = nft;
 
   const featuredContainer = document.getElementById('featured-artwork-container');
   document.getElementById('featured-title').textContent  = nft.name;
   document.getElementById('featured-artist').textContent = nft.creator;
 
-  let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+  let mediaUrl       = optimizeImageUrl(nft.imageUrl, 600);
   const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
   if (bunnyFullUrl) {
     mediaUrl = bunnyFullUrl;
   }
-  let placeholderUrl = optimizeImageUrl(nft.placeholder);
+  let placeholderUrl = optimizeImageUrl(nft.placeholder, 600);
 
   placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
   placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_600/');
 
-  featuredContainer.innerHTML = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft);
+  featuredContainer.innerHTML = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 600);
+  featuredContainer.onclick = () => openNftModal(nft);
 }
 
 // Display 8 random artworks in gallery
@@ -193,21 +175,21 @@ async function displayRandomGallery() {
   const visibleNFTs      = totalNFTs.filter(n => !n.hidden);
   const shuffled         = visibleNFTs.sort(() => 0.5 - Math.random()).slice(0, 8);
 
-  for (const nft of shuffled) {
+  const cards = await Promise.all(shuffled.map(async (nft) => {
     const nftCard    = document.createElement('div');
     nftCard.classList.add('nft-card');
 
-    let mediaUrl       = optimizeImageUrl(nft.imageUrl);
+    let mediaUrl       = optimizeImageUrl(nft.imageUrl, 350);
     const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
     if (bunnyFullUrl) {
       mediaUrl = bunnyFullUrl;
     }
-    let placeholderUrl = optimizeImageUrl(nft.placeholder);
+    let placeholderUrl = optimizeImageUrl(nft.placeholder, 350);
 
     placeholderUrl = normalizePlaceholderUrl(placeholderUrl);
-    placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_600/');
+    placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_350/');
 
-    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft);
+    const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 350);
 
     nftCard.innerHTML = `
       <div style="position:relative;">
@@ -218,15 +200,116 @@ async function displayRandomGallery() {
         </div>
       </div>
     `;
-    galleryContainer.appendChild(nftCard);
+    nftCard.addEventListener('click', () => openNftModal(nft));
+    return nftCard;
+  }));
+
+  const fragment = document.createDocumentFragment();
+  cards.forEach((card) => fragment.appendChild(card));
+  galleryContainer.appendChild(fragment);
+}
+
+/* ===== Modal logic (featured-style) ===== */
+
+function optimizeImageUrl600(url) {
+  if (url.includes('seadn.io')) {
+    return url.replace(/\?.*$/, '') + '?w=600&auto=format';
+  } else if (url.includes('cloudinary.com')) {
+    return url.replace('/upload/', '/upload/w_600/');
+  } else if (url.includes('ipfs.io')) {
+    return url.replace('ipfs.io', 'dweb.link');
+  } else {
+    return url;
   }
 }
 
+async function createMediaElementForModal(mediaUrl, placeholderUrl, nftName, nft) {
+  try {
+    const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+
+    if (bunnyFullUrl) {
+      const autoMute = isMobileDevice() ? 'muted' : '';
+      return `
+        <video ${autoMute} autoplay controls playsinline poster="${placeholderUrl}"
+               style="width:100%;height:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">
+          <source src="${bunnyFullUrl}" type="video/mp4">
+        </video>
+      `;
+    }
+
+    const headResp    = await fetch(mediaUrl, { method: 'HEAD' });
+    const contentType = headResp.headers.get('Content-Type') || '';
+
+    if (contentType.startsWith('video')) {
+      if (mediaUrl.endsWith('.mov')) {
+        mediaUrl = mediaUrl.replace('.mov', '.mp4');
+      }
+      const optimizedMediaUrl = mediaUrl.replace('/upload/', '/upload/w_600/');
+      const autoMute = isMobileDevice() ? 'muted' : '';
+
+      return `
+        <video ${autoMute} autoplay controls playsinline poster="${placeholderUrl}"
+               style="width:100%;height:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">
+          <source src="${optimizedMediaUrl}" type="video/mp4">
+        </video>
+      `;
+    }
+  } catch (e) {
+    console.error('Error fetching media type:', e);
+  }
+
+  return `<img src="${placeholderUrl}" alt="${nftName}" loading="lazy"
+               style="max-width:100%;object-fit:contain;object-position:center;aspect-ratio:1/1;">`;
+}
+
+async function openNftModal(nft) {
+  const modal     = document.getElementById('nft-modal');
+  const titleEl   = document.getElementById('modal-title');
+  const artistEl  = document.getElementById('modal-artist');
+  const mediaWrap = document.getElementById('modal-artwork-container');
+
+  titleEl.textContent  = nft.name || '';
+  artistEl.textContent = nft.creator || '';
+
+  let mediaUrl       = optimizeImageUrl600(nft.imageUrl || '');
+  const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
+  if (bunnyFullUrl) {
+    mediaUrl = bunnyFullUrl;
+  }
+  let placeholderUrl = optimizeImageUrl600(nft.placeholder || '');
+  placeholderUrl     = normalizePlaceholderUrl(placeholderUrl);
+  placeholderUrl     = placeholderUrl.replace('/upload/', '/upload/w_600/');
+
+  mediaWrap.innerHTML = await createMediaElementForModal(mediaUrl, placeholderUrl, nft.name || '', nft);
+
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('nft-modal-open');
+}
+
+function closeNftModal() {
+  const modal = document.getElementById('nft-modal');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('nft-modal-open');
+
+  const mediaWrap = document.getElementById('modal-artwork-container');
+  if (mediaWrap) mediaWrap.innerHTML = '';
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-close-modal')) {
+    closeNftModal();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeNftModal();
+});
+
 // Init
 (async function init() {
-  await fetchOriginalNFTs();
-  await fetchModifiedNFTs();
+  await Promise.all([fetchOriginalNFTs(), fetchModifiedNFTs()]);
   mergeNFTData();
-  await displayFeaturedArtwork();
-  await displayRandomGallery();
+  await Promise.all([displayFeaturedArtwork(), displayRandomGallery()]);
 })();

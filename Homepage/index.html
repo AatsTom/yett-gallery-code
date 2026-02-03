@@ -35,3 +35,20 @@
 
     <script src="../config.js"></script>
     <script src="script.js"></script>
+
+    <!-- NFT Modal (Featured-style) -->
+    <div id="nft-modal" class="nft-modal hidden" aria-hidden="true">
+        <div class="nft-modal-backdrop" data-close-modal></div>
+        <div class="nft-modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <button class="nft-modal-close" aria-label="Close" data-close-modal>&times;</button>
+            <div class="nft-modal-body">
+                <div id="modal-artwork-container" class="modal-artwork-container">
+                    <!-- media goes here -->
+                </div>
+                <div id="modal-info-container" class="modal-info-container">
+                    <h1 id="modal-title"></h1>
+                    <p id="modal-artist"></p>
+                </div>
+            </div>
+        </div>
+    </div>
