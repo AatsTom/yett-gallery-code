@@ -60,7 +60,7 @@ function getChainIconData(nft) {
   const chainMap = {
     base: {
       label: 'Base',
-      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Base.png'
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Base_V2.png'
     },
     ordinals: {
       label: 'Ordinals',
