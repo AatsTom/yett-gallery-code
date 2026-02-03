@@ -116,13 +116,23 @@ function buildBunnyUrl(videoId, quality = '480p') {
 }
 
 async function processNft(nft) {
-  if (!nft || nft.bunnyVideoId) return false;
+  if (!nft) return { updated: false, uploaded: false };
 
   const mediaUrl = nft.imageUrl || '';
-  if (!mediaUrl) return false;
+  if (!mediaUrl) return { updated: false, uploaded: false };
+
+  if (nft.bunnyVideoId) {
+    if (!nft.bunnySourceUrl) {
+      nft.bunnySourceUrl = mediaUrl;
+      return { updated: true, uploaded: false };
+    }
+    if (nft.bunnySourceUrl === mediaUrl) {
+      return { updated: false, uploaded: false };
+    }
+  }
 
   const isVideo = isVideoUrl(mediaUrl) || await isVideoByHead(mediaUrl);
-  if (!isVideo) return false;
+  if (!isVideo) return { updated: false, uploaded: false };
 
   console.log(`Uploading: ${nft.name || mediaUrl}`);
   const videoId = await createBunnyVideo(nft.name || path.basename(mediaUrl));
@@ -132,20 +142,21 @@ async function processNft(nft) {
     const mediaResp = await fetchWithRetry(mediaUrl, {}, 3, 1000);
     if (!mediaResp.ok) {
       console.warn(`Skipping ${mediaUrl} (download failed: ${mediaResp.status} ${mediaResp.statusText})`);
-      return false;
+      return { updated: false, uploaded: false };
     }
     buffer = Buffer.from(await mediaResp.arrayBuffer());
   } catch (error) {
     console.warn(`Skipping ${mediaUrl} (fetch failed: ${error.message || error})`);
-    return false;
+    return { updated: false, uploaded: false };
   }
 
   await uploadVideoToBunny(videoId, buffer);
   nft.bunnyVideoId = videoId;
+  nft.bunnySourceUrl = mediaUrl;
   if (PULL_ZONE) {
     nft.bunnyVideoUrl = buildBunnyUrl(videoId, '480p');
   }
-  return true;
+  return { updated: true, uploaded: true };
 }
 
 async function run() {
@@ -156,8 +167,8 @@ async function run() {
   let updatedCount = 0;
   for (const nft of items) {
     if (LIMIT && updatedCount >= LIMIT) break;
-    const updated = await processNft(nft);
-    if (updated) updatedCount += 1;
+    const result = await processNft(nft);
+    if (result.updated) updatedCount += 1;
   }
 
   if (updatedCount === 0) {
