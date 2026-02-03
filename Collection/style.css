@@ -14,6 +14,52 @@
     background: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
 }
 
+/* Collection filters */
+.collection-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  width: min(1100px, 92vw);
+  margin: 110px auto 24px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.collection-filter,
+.collection-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+  flex: 1 1 180px;
+}
+
+.collection-controls label {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #111;
+}
+
+.collection-controls select,
+.collection-controls input[type="search"] {
+  font-family: "Outfit", sans-serif;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  color: #111;
+}
+
+.collection-controls input[type="search"]::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
 /* Container for NFT cards */
 #nft-container {
     display: grid;
@@ -93,6 +139,10 @@
 @media (max-width: 768px) {
     #page-title {
         font-size: 2rem;
+    }
+    .collection-controls {
+      margin: 90px auto 16px;
+      padding: 12px 14px;
     }
     .nft-card h2 {
        font-size: 0.8rem!important;
