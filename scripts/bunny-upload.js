@@ -86,7 +86,8 @@ async function createBunnyVideo(title) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to create Bunny video: ${response.status} ${response.statusText}`);
+    const body = await response.text().catch(() => '');
+    throw new Error(`Failed to create Bunny video: ${response.status} ${response.statusText}${body ? ` - ${body}` : ''}`);
   }
 
   const data = await response.json();
@@ -106,7 +107,8 @@ async function uploadVideoToBunny(videoId, buffer) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to upload video: ${response.status} ${response.statusText}`);
+    const body = await response.text().catch(() => '');
+    throw new Error(`Failed to upload video: ${response.status} ${response.statusText}${body ? ` - ${body}` : ''}`);
   }
 }
 
@@ -135,7 +137,13 @@ async function processNft(nft) {
   if (!isVideo) return { updated: false, uploaded: false };
 
   console.log(`Uploading: ${nft.name || mediaUrl}`);
-  const videoId = await createBunnyVideo(nft.name || path.basename(mediaUrl));
+  let videoId;
+  try {
+    videoId = await createBunnyVideo(nft.name || path.basename(mediaUrl));
+  } catch (error) {
+    console.warn(`Skipping ${mediaUrl} (create failed: ${error.message || error})`);
+    return { updated: false, uploaded: false };
+  }
 
   let buffer;
   try {
@@ -150,7 +158,12 @@ async function processNft(nft) {
     return { updated: false, uploaded: false };
   }
 
-  await uploadVideoToBunny(videoId, buffer);
+  try {
+    await uploadVideoToBunny(videoId, buffer);
+  } catch (error) {
+    console.warn(`Skipping ${mediaUrl} (upload failed: ${error.message || error})`);
+    return { updated: false, uploaded: false };
+  }
   nft.bunnyVideoId = videoId;
   nft.bunnySourceUrl = mediaUrl;
   if (PULL_ZONE) {
