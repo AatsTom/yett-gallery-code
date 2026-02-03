@@ -15,18 +15,87 @@
 }
 
 /* Collection filters */
-.collection-controls {
+.collection-filter-toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #111;
+  border: none;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1500;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-end;
-  width: min(1100px, 92vw);
-  margin: 110px auto 24px;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-filter-toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.filter-icon {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  display: inline-block;
+}
+
+.filter-icon::before,
+.filter-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.filter-icon::before {
+  top: 4px;
+  box-shadow: 0 6px 0 #fff, 0 12px 0 #fff;
+}
+
+.collection-filters-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+  width: min(320px, 90vw);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.collection-filters-panel.hidden {
+  display: none;
+}
+
+.collection-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111;
+}
+
+.collection-filters-close {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
 }
 
 .collection-filter,
@@ -35,18 +104,17 @@
   flex-direction: column;
   gap: 6px;
   min-width: 180px;
-  flex: 1 1 180px;
 }
 
-.collection-controls label {
+.collection-filters-panel label {
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 0.9rem;
   color: #111;
 }
 
-.collection-controls select,
-.collection-controls input[type="search"] {
+.collection-filters-panel select,
+.collection-filters-panel input[type="search"] {
   font-family: "Outfit", sans-serif;
   font-size: 1rem;
   padding: 10px 12px;
@@ -56,8 +124,20 @@
   color: #111;
 }
 
-.collection-controls input[type="search"]::placeholder {
+.collection-filters-panel input[type="search"]::placeholder {
   color: rgba(0, 0, 0, 0.5);
+}
+
+.collection-reset {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
 }
 
 /* Container for NFT cards */
@@ -140,9 +220,16 @@
     #page-title {
         font-size: 2rem;
     }
-    .collection-controls {
-      margin: 90px auto 16px;
-      padding: 12px 14px;
+    .collection-filter-toggle {
+      right: 16px;
+      bottom: 16px;
+      width: 48px;
+      height: 48px;
+    }
+    .collection-filters-panel {
+      right: 16px;
+      bottom: 76px;
+      padding: 14px;
     }
     .nft-card h2 {
        font-size: 0.8rem!important;

@@ -21,7 +21,8 @@ let modifiedNFTs = {};
 let activeFilters = {
   artist: 'all',
   chain: 'all',
-  search: ''
+  search: '',
+  media: 'all'
 };
 
 const BUNNY_PULL_ZONE = window.BUNNY_PULL_ZONE || '';
@@ -227,6 +228,29 @@ function getChainValue(nft) {
   return (nft.chain || nft.blockchain || nft.network || '').trim();
 }
 
+function normalizeChainValue(chainValue) {
+  return chainValue.trim().toLowerCase();
+}
+
+function formatChainLabel(chainValue) {
+  return chainValue
+    .toLowerCase()
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function getMediaType(nft) {
+  if (nft.bunnyVideoId || nft.bunnyVideoUrl) {
+    return 'video';
+  }
+  const url = (nft.imageUrl || nft.placeholder || '').toLowerCase();
+  if (url.endsWith('.gif')) return 'gif';
+  if (url.match(/\.(mp4|mov|webm)$/)) return 'video';
+  return 'image';
+}
+
 function getSearchableText(nft) {
   const title = nft.name || '';
   const artist = getArtistValue(nft);
@@ -240,17 +264,22 @@ function populateFilterOptions() {
   if (!artistSelect || !chainSelect) return;
 
   const artists = new Set();
-  const chains = new Set();
+  const chains = new Map();
 
   totalNFTs.forEach((nft) => {
     const artist = getArtistValue(nft);
     const chain = getChainValue(nft);
     if (artist) artists.add(artist);
-    if (chain) chains.add(chain);
+    if (chain) {
+      const normalized = normalizeChainValue(chain);
+      if (!chains.has(normalized)) {
+        chains.set(normalized, formatChainLabel(chain));
+      }
+    }
   });
 
   const sortedArtists = Array.from(artists).sort((a, b) => a.localeCompare(b));
-  const sortedChains = Array.from(chains).sort((a, b) => a.localeCompare(b));
+  const sortedChains = Array.from(chains.entries()).sort((a, b) => a[1].localeCompare(b[1]));
 
   artistSelect.innerHTML = '<option value="all">All artists</option>';
   chainSelect.innerHTML = '<option value="all">All chains</option>';
@@ -262,10 +291,10 @@ function populateFilterOptions() {
     artistSelect.appendChild(option);
   });
 
-  sortedChains.forEach((chain) => {
+  sortedChains.forEach(([normalized, label]) => {
     const option = document.createElement('option');
-    option.value = chain;
-    option.textContent = chain;
+    option.value = normalized;
+    option.textContent = label;
     chainSelect.appendChild(option);
   });
 
@@ -277,25 +306,32 @@ function applyFilters() {
   const searchInput = document.getElementById('collection-search');
   const artistSelect = document.getElementById('artist-filter');
   const chainSelect = document.getElementById('chain-filter');
-  if (!searchInput || !artistSelect || !chainSelect) return;
+  const mediaSelect = document.getElementById('media-filter');
+  if (!searchInput || !artistSelect || !chainSelect || !mediaSelect) return;
 
   activeFilters = {
     search: searchInput.value.trim().toLowerCase(),
     artist: artistSelect.value,
-    chain: chainSelect.value
+    chain: chainSelect.value,
+    media: mediaSelect.value
   };
 
   filteredNFTs = totalNFTs.filter((nft) => {
     if (nft.hidden) return false;
 
     const artist = getArtistValue(nft);
-    const chain = getChainValue(nft);
+    const chain = normalizeChainValue(getChainValue(nft));
+    const mediaType = getMediaType(nft);
 
     if (activeFilters.artist !== 'all' && artist !== activeFilters.artist) {
       return false;
     }
 
     if (activeFilters.chain !== 'all' && chain !== activeFilters.chain) {
+      return false;
+    }
+
+    if (activeFilters.media !== 'all' && mediaType !== activeFilters.media) {
       return false;
     }
 
@@ -324,6 +360,8 @@ function registerFilterListeners() {
   const searchInput = document.getElementById('collection-search');
   const artistSelect = document.getElementById('artist-filter');
   const chainSelect = document.getElementById('chain-filter');
+  const mediaSelect = document.getElementById('media-filter');
+  const resetButton = document.querySelector('.collection-reset');
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
@@ -340,6 +378,59 @@ function registerFilterListeners() {
       applyFilters();
     });
   }
+  if (mediaSelect) {
+    mediaSelect.addEventListener('change', () => {
+      applyFilters();
+    });
+  }
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (artistSelect) artistSelect.value = 'all';
+      if (chainSelect) chainSelect.value = 'all';
+      if (mediaSelect) mediaSelect.value = 'all';
+      applyFilters();
+    });
+  }
+  registerFilterPanelListeners();
+}
+
+function registerFilterPanelListeners() {
+  const toggleButton = document.querySelector('.collection-filter-toggle');
+  const panel = document.getElementById('collection-filters-panel');
+  const closeButton = document.querySelector('.collection-filters-close');
+
+  if (!toggleButton || !panel) return;
+
+  const openPanel = () => {
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
+    toggleButton.setAttribute('aria-expanded', 'true');
+  };
+
+  const closePanel = () => {
+    panel.classList.add('hidden');
+    panel.setAttribute('aria-hidden', 'true');
+    toggleButton.setAttribute('aria-expanded', 'false');
+  };
+
+  toggleButton.addEventListener('click', () => {
+    if (panel.classList.contains('hidden')) {
+      openPanel();
+    } else {
+      closePanel();
+    }
+  });
+
+  if (closeButton) {
+    closeButton.addEventListener('click', closePanel);
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!panel.contains(event.target) && !toggleButton.contains(event.target)) {
+      closePanel();
+    }
+  });
 }
 
 /* ===== Modal logic (featured-style) ===== */
