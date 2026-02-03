@@ -16,7 +16,14 @@ function normalizePlaceholderUrl(url) {
 let currentPage  = 1;
 let itemsPerPage = calculateItemsPerPage();
 let totalNFTs    = [];
+let filteredNFTs = [];
 let modifiedNFTs = {};
+let activeFilters = {
+  artist: 'all',
+  chain: 'all',
+  search: '',
+  media: 'all'
+};
 
 const BUNNY_PULL_ZONE = window.BUNNY_PULL_ZONE || '';
 
@@ -77,10 +84,10 @@ const mergeNFTData = () => {
   });
 };
 
-const displayNFTs = (page) => {
+const displayNFTs = (page, list) => {
   const container  = document.getElementById('nft-container');
   const startIndex = (page - 1) * itemsPerPage;
-  const slice      = totalNFTs.slice(startIndex, page * itemsPerPage);
+  const slice      = list.slice(startIndex, page * itemsPerPage);
 
   slice.forEach(async (nft) => {
     if (nft.hidden) return;
@@ -103,10 +110,15 @@ const displayNFTs = (page) => {
     placeholderUrl = placeholderUrl.replace('/upload/', '/upload/w_350/');
 
     const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, name, nft);
+    const chainIcon = getChainIconData(nft);
+    const chainIconMarkup = chainIcon
+      ? `<img src="${chainIcon.url}" class="chain-icon" alt="${chainIcon.label} chain">`
+      : '';
 
     card.innerHTML = `
       <div style="position:relative;">
         ${mediaElement}
+        ${chainIconMarkup}
         <div class="gradient-overlay">
           <h2>${name}</h2>
           <p>${creator}</p>
@@ -201,8 +213,8 @@ function handleScroll() {
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
   if (scrollTop + clientHeight >= scrollHeight / 2) {
     currentPage++;
-    displayNFTs(currentPage);
-    if (currentPage * itemsPerPage >= totalNFTs.length) {
+    displayNFTs(currentPage, filteredNFTs);
+    if (currentPage * itemsPerPage >= filteredNFTs.length) {
       window.removeEventListener('scroll', handleScroll);
     }
   }
@@ -211,6 +223,319 @@ function handleScroll() {
 window.addEventListener('resize', () => {
   itemsPerPage = calculateItemsPerPage();
 });
+
+function getArtistValue(nft) {
+  return (nft.creator || '').trim();
+}
+
+function getChainValue(nft) {
+  return (nft.chain || nft.blockchain || nft.network || '').trim();
+}
+
+function normalizeChainValue(chainValue) {
+  return chainValue.trim().toLowerCase();
+}
+
+function formatChainLabel(chainValue) {
+  return chainValue
+    .toLowerCase()
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function getChainIconData(nft) {
+  const chain = normalizeChainValue(getChainValue(nft));
+  const chainMap = {
+    base: {
+      label: 'Base',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Base_V2.png'
+    },
+    ordinals: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    bitcoin: {
+      label: 'Ordinals',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Bitcoin.png'
+    },
+    ethereum: {
+      label: 'Ethereum',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Ethereum.png'
+    },
+    matic: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    polygon: {
+      label: 'Matic',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Matic.png'
+    },
+    optimism: {
+      label: 'Optimism',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Optimism.png'
+    },
+    solana: {
+      label: 'Solana',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Solana.png'
+    },
+    tezos: {
+      label: 'Tezos',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Tezos.png'
+    },
+    zora: {
+      label: 'Zora',
+      url: 'https://www.yett.gallery/wp-content/uploads/2026/02/Zora.png'
+    }
+  };
+
+  return chainMap[chain] || null;
+}
+
+function getMediaType(nft) {
+  if (nft.bunnyVideoId || nft.bunnyVideoUrl) {
+    return 'video';
+  }
+  const url = (nft.imageUrl || nft.placeholder || '').toLowerCase();
+  if (url.endsWith('.gif')) return 'gif';
+  if (url.match(/\.(mp4|mov|webm)$/)) return 'video';
+  return 'image';
+}
+
+function getSearchableText(nft) {
+  const title = nft.name || '';
+  const artist = getArtistValue(nft);
+  const chain = getChainValue(nft);
+  return `${title} ${artist} ${chain}`.toLowerCase();
+}
+
+function populateFilterOptions() {
+  const artistSelect = document.getElementById('artist-filter');
+  const chainSelect = document.getElementById('chain-filter');
+  if (!artistSelect || !chainSelect) return;
+
+  const artists = new Map();
+  const chains = new Map();
+  const mediaCounts = new Map();
+  let visibleTotal = 0;
+
+  totalNFTs.forEach((nft) => {
+    if (nft.hidden) return;
+    visibleTotal += 1;
+    const artist = getArtistValue(nft);
+    const chain = getChainValue(nft);
+    const mediaType = getMediaType(nft);
+    if (artist) {
+      artists.set(artist, (artists.get(artist) || 0) + 1);
+    }
+    if (chain) {
+      const normalized = normalizeChainValue(chain);
+      if (!chains.has(normalized)) {
+        chains.set(normalized, { label: formatChainLabel(chain), count: 0 });
+      }
+      chains.get(normalized).count += 1;
+    }
+    mediaCounts.set(mediaType, (mediaCounts.get(mediaType) || 0) + 1);
+  });
+
+  const sortedArtists = Array.from(artists.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedChains = Array.from(chains.entries()).sort((a, b) => a[1].label.localeCompare(b[1].label));
+
+  artistSelect.innerHTML = `<option value="all">All artists (${visibleTotal})</option>`;
+  chainSelect.innerHTML = `<option value="all">All chains (${visibleTotal})</option>`;
+
+  sortedArtists.forEach(([artist, count]) => {
+    const option = document.createElement('option');
+    option.value = artist;
+    option.textContent = `${artist} (${count})`;
+    artistSelect.appendChild(option);
+  });
+
+  sortedChains.forEach(([normalized, data]) => {
+    const option = document.createElement('option');
+    option.value = normalized;
+    option.textContent = `${data.label} (${data.count})`;
+    chainSelect.appendChild(option);
+  });
+
+  const mediaSelect = document.getElementById('media-filter');
+  if (mediaSelect) {
+    mediaSelect.innerHTML = `
+      <option value="all">All media (${visibleTotal})</option>
+      <option value="image">Images (${mediaCounts.get('image') || 0})</option>
+      <option value="video">Videos (${mediaCounts.get('video') || 0})</option>
+      <option value="gif">GIFs (${mediaCounts.get('gif') || 0})</option>
+    `;
+  }
+
+  artistSelect.value = activeFilters.artist;
+  chainSelect.value = activeFilters.chain;
+  if (mediaSelect) mediaSelect.value = activeFilters.media;
+}
+
+function applyFilters() {
+  const searchInput = document.getElementById('collection-search');
+  const artistSelect = document.getElementById('artist-filter');
+  const chainSelect = document.getElementById('chain-filter');
+  const mediaSelect = document.getElementById('media-filter');
+  const fieldResetButtons = document.querySelectorAll('.collection-field-reset');
+  if (!searchInput || !artistSelect || !chainSelect || !mediaSelect) return;
+
+  activeFilters = {
+    search: searchInput.value.trim().toLowerCase(),
+    artist: artistSelect.value,
+    chain: chainSelect.value,
+    media: mediaSelect.value
+  };
+
+  filteredNFTs = totalNFTs.filter((nft) => {
+    if (nft.hidden) return false;
+
+    const artist = getArtistValue(nft);
+    const chain = normalizeChainValue(getChainValue(nft));
+    const mediaType = getMediaType(nft);
+
+    if (activeFilters.artist !== 'all' && artist !== activeFilters.artist) {
+      return false;
+    }
+
+    if (activeFilters.chain !== 'all' && chain !== activeFilters.chain) {
+      return false;
+    }
+
+    if (activeFilters.media !== 'all' && mediaType !== activeFilters.media) {
+      return false;
+    }
+
+    if (activeFilters.search) {
+      const searchableText = getSearchableText(nft);
+      if (!searchableText.includes(activeFilters.search)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  currentPage = 1;
+  const container = document.getElementById('nft-container');
+  if (container) container.innerHTML = '';
+  displayNFTs(currentPage, filteredNFTs);
+
+  const filterCount = document.getElementById('collection-filters-count');
+  if (filterCount) {
+    const totalVisible = totalNFTs.filter((nft) => !nft.hidden).length;
+    filterCount.textContent = `Showing ${filteredNFTs.length} of ${totalVisible}`;
+  }
+
+  fieldResetButtons.forEach((button) => {
+    const targetId = button.getAttribute('data-reset-target');
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const isSelect = target.tagName === 'SELECT';
+    const isActive = isSelect ? target.value !== 'all' : target.value.trim() !== '';
+    button.classList.toggle('is-hidden', !isActive);
+  });
+
+  window.removeEventListener('scroll', handleScroll);
+  if (currentPage * itemsPerPage < filteredNFTs.length) {
+    window.addEventListener('scroll', handleScroll);
+  }
+}
+
+function registerFilterListeners() {
+  const searchInput = document.getElementById('collection-search');
+  const artistSelect = document.getElementById('artist-filter');
+  const chainSelect = document.getElementById('chain-filter');
+  const mediaSelect = document.getElementById('media-filter');
+  const resetButton = document.querySelector('.collection-reset');
+  const fieldResetButtons = document.querySelectorAll('.collection-field-reset');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      applyFilters();
+    });
+  }
+  if (artistSelect) {
+    artistSelect.addEventListener('change', () => {
+      applyFilters();
+    });
+  }
+  if (chainSelect) {
+    chainSelect.addEventListener('change', () => {
+      applyFilters();
+    });
+  }
+  if (mediaSelect) {
+    mediaSelect.addEventListener('change', () => {
+      applyFilters();
+    });
+  }
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (artistSelect) artistSelect.value = 'all';
+      if (chainSelect) chainSelect.value = 'all';
+      if (mediaSelect) mediaSelect.value = 'all';
+      applyFilters();
+    });
+  }
+  fieldResetButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-reset-target');
+      if (!targetId) return;
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      if (target.tagName === 'SELECT') {
+        target.value = 'all';
+      } else {
+        target.value = '';
+      }
+      applyFilters();
+    });
+  });
+  registerFilterPanelListeners();
+}
+
+function registerFilterPanelListeners() {
+  const toggleButton = document.querySelector('.collection-filter-toggle');
+  const panel = document.getElementById('collection-filters-panel');
+  const closeButton = document.querySelector('.collection-filters-close');
+
+  if (!toggleButton || !panel) return;
+
+  const openPanel = () => {
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
+    toggleButton.setAttribute('aria-expanded', 'true');
+  };
+
+  const closePanel = () => {
+    panel.classList.add('hidden');
+    panel.setAttribute('aria-hidden', 'true');
+    toggleButton.setAttribute('aria-expanded', 'false');
+  };
+
+  toggleButton.addEventListener('click', () => {
+    if (panel.classList.contains('hidden')) {
+      openPanel();
+    } else {
+      closePanel();
+    }
+  });
+
+  if (closeButton) {
+    closeButton.addEventListener('click', closePanel);
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!panel.contains(event.target) && !toggleButton.contains(event.target)) {
+      closePanel();
+    }
+  });
+}
 
 /* ===== Modal logic (featured-style) ===== */
 
@@ -322,6 +647,8 @@ document.addEventListener('keydown', (e) => {
   await fetchModifiedNFTs();
   mergeNFTData();
   totalNFTs.sort(() => 0.5 - Math.random());
-  displayNFTs(currentPage);
-  window.addEventListener('scroll', handleScroll);
+  filteredNFTs = totalNFTs.filter((nft) => !nft.hidden);
+  populateFilterOptions();
+  registerFilterListeners();
+  applyFilters();
 })();

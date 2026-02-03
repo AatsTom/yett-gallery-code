@@ -1,4 +1,29 @@
 /* Title styling */
+@font-face {
+  font-family: "Dashicons";
+  src: url("https://s.w.org/wp-includes/fonts/dashicons.woff2") format("woff2"),
+       url("https://s.w.org/wp-includes/fonts/dashicons.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.dashicons {
+  font-family: "Dashicons";
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dashicons-filter::before {
+  content: "\f536";
+}
+
 #page-title {
     position: fixed;  /* Make the title fixed */
     top: 0;  /* Stick to the top */
@@ -12,6 +37,141 @@
     font-size: 3rem;
     color: #ffffff;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+}
+
+/* Collection filters */
+.collection-filter-toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #111;
+  border: none;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-filter-toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.collection-filter-toggle .dashicons {
+  color: #fff;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  font-family: "Dashicons";
+  line-height: 1;
+}
+
+.collection-filters-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+  width: min(320px, 90vw);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.collection-filters-panel.hidden {
+  display: none;
+}
+
+.collection-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111;
+}
+
+.collection-filters-count {
+  font-family: "Outfit", sans-serif;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.collection-filters-close.nft-modal-close {
+  position: static !important;
+  font-size: 28px !important;
+  color: #111 !important;
+}
+
+.collection-filter,
+.collection-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.collection-filters-panel label {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #111;
+}
+
+.collection-filters-panel select,
+.collection-filters-panel input[type="search"] {
+  font-family: "Outfit", sans-serif;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  color: #111;
+}
+
+.collection-filters-panel input[type="search"]::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.collection-reset {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.collection-field-reset {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
+  font-family: "Outfit", sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.collection-field-reset:hover {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.collection-field-reset.is-hidden {
+  display: none;
 }
 
 /* Container for NFT cards */
@@ -94,6 +254,17 @@
     #page-title {
         font-size: 2rem;
     }
+    .collection-filter-toggle {
+      right: 16px;
+      bottom: 16px;
+      width: 48px;
+      height: 48px;
+    }
+    .collection-filters-panel {
+      right: 16px;
+      bottom: 76px;
+      padding: 14px;
+    }
     .nft-card h2 {
        font-size: 0.8rem!important;
     }
@@ -120,6 +291,18 @@
   position: absolute !important;
   top: 5px !important;
   right: 5px !important;
+  width: 24px !important;
+  height: 24px !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+  -webkit-filter: drop-shadow(0px 0px 4px #000) !important;
+  filter: drop-shadow(0px 0px 4px #000) !important;
+}
+
+.chain-icon {
+  position: absolute !important;
+  top: 5px !important;
+  left: 5px !important;
   width: 24px !important;
   height: 24px !important;
   z-index: 10 !important;
