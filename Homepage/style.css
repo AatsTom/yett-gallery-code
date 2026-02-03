@@ -303,3 +303,153 @@ filter: drop-shadow(0px 0px 4px #000);
    -webkit-filter: drop-shadow(0px 0px 4px #000);
  filter: drop-shadow(0px 0px 4px #000);
 }
+
+/* ===== Modal (Featured-style popup) ===== */
+
+.nft-modal.hidden { display: none !important; }
+
+.nft-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: 100px !important;
+  padding-bottom: 20px !important;
+  box-sizing: border-box !important;
+}
+
+.nft-modal-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.7) !important;
+}
+
+.nft-modal-content {
+  position: relative !important;
+  max-width: 1100px !important;
+  width: 95% !important;
+  max-height: 90vh !important;
+  margin: 0 auto !important;
+  background: #fff !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.nft-modal-close {
+  position: absolute !important;
+  top: 10px !important;
+  right: 12px !important;
+  font-size: 28px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  z-index: 10 !important;
+}
+
+.nft-modal-body {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+}
+
+.modal-artwork-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  aspect-ratio: 1 / 1 !important;
+  flex: 0 0 auto !important;
+  width: 36vw !important;
+  max-width: 600px !important;
+  min-width: 320px !important;
+}
+
+.modal-artwork-container img,
+.modal-artwork-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+.modal-info-container {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 40px !important;
+  overflow: auto !important;
+  max-height: 90vh !important;
+  text-align: left !important;
+}
+
+#modal-title {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 3rem !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  color: #000 !important;
+  text-align: left !important;
+}
+
+#modal-artist {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-size: 1.5rem !important;
+  color: #000 !important;
+  margin-top: 20px !important;
+}
+
+@media (max-width: 1024px) {
+  .nft-modal-body {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .modal-artwork-container {
+    width: 60vw !important;
+    max-width: 600px !important;
+  }
+  .modal-info-container {
+    padding: 20px !important;
+    text-align: center !important;
+  }
+  #modal-title,
+  #modal-artist {
+    text-align: center !important;
+    width: 100% !important;
+  }
+  #modal-title {
+    font-size: 2.5rem !important;
+  }
+  #modal-artist {
+    font-size: 1rem !important;
+  }
+  .nft-modal-close {
+    color: #000 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-artwork-container {
+    width: 100% !important;
+  }
+  #modal-title,
+  #modal-artist {
+    text-align: center !important;
+  }
+  .nft-modal-close {
+    color: #000 !important;
+  }
+}
+
+body.nft-modal-open {
+  overflow: hidden !important;
+}
