@@ -55,6 +55,28 @@ function normalizeChainValue(chainValue) {
   return chainValue.trim().toLowerCase();
 }
 
+const chainStatsConfig = [
+  { key: 'ethereum', label: 'Ethereum' },
+  { key: 'matic', label: 'Matic' },
+  { key: 'base', label: 'Base' },
+  { key: 'zora', label: 'Zora' },
+  { key: 'optimism', label: 'Optimism' },
+  { key: 'ordinals', label: 'Ordinals' },
+  { key: 'solana', label: 'Solana' },
+  { key: 'tezos', label: 'Tezos' }
+];
+
+function getChainKey(nft) {
+  const chain = normalizeChainValue(getChainValue(nft));
+  if (chain === 'polygon') return 'matic';
+  if (chain === 'bitcoin') return 'ordinals';
+  return chain;
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
 function getChainIconData(nft) {
   const chain = normalizeChainValue(getChainValue(nft));
   const chainMap = {
@@ -101,6 +123,60 @@ function getChainIconData(nft) {
   };
 
   return chainMap[chain] || null;
+}
+
+function updateStats() {
+  const statsSection = document.getElementById('stats-section');
+  if (!statsSection) return;
+
+  const visibleNFTs = totalNFTs.filter(nft => !nft.hidden);
+  const uniqueArtists = new Set(
+    visibleNFTs
+      .map(nft => (nft.creator || '').trim())
+      .filter(Boolean)
+  );
+
+  const chainCounts = chainStatsConfig.reduce((acc, chain) => {
+    acc[chain.key] = 0;
+    return acc;
+  }, {});
+
+  visibleNFTs.forEach((nft) => {
+    const chainKey = getChainKey(nft);
+    if (chainCounts[chainKey] !== undefined) {
+      chainCounts[chainKey] += 1;
+    }
+  });
+
+  const artistsEl = statsSection.querySelector('[data-stat="artists"]');
+  const nftsEl = statsSection.querySelector('[data-stat="nfts"]');
+  const chainsEl = statsSection.querySelector('[data-stat="chains"]');
+
+  if (artistsEl) artistsEl.textContent = formatNumber(uniqueArtists.size);
+  if (nftsEl) nftsEl.textContent = formatNumber(visibleNFTs.length);
+  if (chainsEl) chainsEl.textContent = formatNumber(chainStatsConfig.length);
+
+  const chainRows = [
+    statsSection.querySelector('[data-chain-row="1"]'),
+    statsSection.querySelector('[data-chain-row="2"]')
+  ];
+  chainRows.forEach((row) => {
+    if (row) row.innerHTML = '';
+  });
+
+  chainStatsConfig.forEach((chain, index) => {
+    const rowIndex = index < 4 ? 0 : 1;
+    const row = chainRows[rowIndex];
+    if (!row) return;
+
+    const statCard = document.createElement('div');
+    statCard.classList.add('stat-card');
+    statCard.innerHTML = `
+      <div class="stat-value">${formatNumber(chainCounts[chain.key])}</div>
+      <div class="stat-label">Collected on ${chain.label}</div>
+    `;
+    row.appendChild(statCard);
+  });
 }
 
 async function fetchModifiedNFTs() {
@@ -395,5 +471,6 @@ document.addEventListener('keydown', (e) => {
 (async function init() {
   await Promise.all([fetchOriginalNFTs(), fetchModifiedNFTs()]);
   mergeNFTData();
+  updateStats();
   await Promise.all([displayFeaturedArtwork(), displayRandomGallery()]);
 })();

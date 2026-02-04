@@ -20,7 +20,8 @@ body {
     position: relative !important;
     aspect-ratio: 1 / 1 !important; 
     flex: 0 0 auto !important; 
-    width: 36vw !important; 
+    width: clamp(280px, 36vw, 520px) !important; 
+    max-height: 60vh !important;
 }
 
 
@@ -93,6 +94,62 @@ body {
 
 #intro-right p {
     line-height: 1.6 !important;
+}
+
+/* Stats Section */
+#stats-section {
+    max-width: 1200px !important;
+    margin: 0 auto 0 auto !important;
+    padding: 0 0 0 0 !important;
+}
+
+.stats-title {
+    text-align: center;
+    font-size: 2.5rem !important;
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    margin-bottom: 25px !important;
+    color: #000 !important;
+}
+
+.stats-row {
+    display: grid !important;
+    gap: 20px !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+}
+
+.stats-row-primary {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.stats-row-chains {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.stat-card {
+    padding: 10px !important;
+}
+
+.stat-value {
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 2.5rem !important;
+    color: #000 !important;
+}
+
+.stat-label {
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 1rem !important;
+    color: #000 !important;
+    margin-top: 8px !important;
 }
 
 /* Randomized Gallery Section */
@@ -194,7 +251,8 @@ body {
     }
 
     #featured-artwork-container {
-        width: 60vw !important; 
+        width: min(60vw, 420px) !important; 
+        max-height: 60vh !important;
     }
 
     #featured-info-container {
@@ -221,6 +279,14 @@ body {
     .nft-card .gradient-overlay {
         padding: 5px !important;
     }
+
+    .stats-row-primary {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .stats-row-chains {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
 }
 
 /* Mobile Adjustments */
@@ -246,13 +312,22 @@ body {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 
+    .stats-row-primary {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+
+    .stats-row-chains {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
     /* Mobile already inherits the tablet-defined font sizes for NFT cards,
        so no need to redefine here. */
 }
 
 @media (max-width: 768px) {
   #featured-artwork-container{
-  width: 100% !important;
+  width: min(100%, 360px) !important;
+  max-height: 60vh !important;
 }
 }
 .discover-btn-container {
