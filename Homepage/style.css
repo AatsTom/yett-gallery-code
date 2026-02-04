@@ -98,8 +98,19 @@ body {
 /* Stats Section */
 #stats-section {
     max-width: 1200px !important;
-    margin: 0 auto 50px auto !important;
-    padding: 0 0 50px 0 !important;
+    margin: 0 auto 0 auto !important;
+    padding: 0 0 0 0 !important;
+}
+
+.stats-title {
+    text-align: center;
+    font-size: 2.5rem !important;
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    margin-bottom: 25px !important;
+    color: #000 !important;
 }
 
 .stats-row {
