@@ -310,25 +310,61 @@ function getSearchableText(nft) {
   return `${title} ${artist} ${chain}`.toLowerCase();
 }
 
+function getFilteredNFTsForCounts(ignoreKey) {
+  return totalNFTs.filter((nft) => {
+    if (nft.hidden) return false;
+
+    const artist = getArtistValue(nft);
+    const chain = normalizeChainValue(getChainValue(nft));
+    const mediaType = getMediaType(nft);
+
+    if (ignoreKey !== 'artist' && activeFilters.artist !== 'all' && artist !== activeFilters.artist) {
+      return false;
+    }
+
+    if (ignoreKey !== 'chain' && activeFilters.chain !== 'all' && chain !== activeFilters.chain) {
+      return false;
+    }
+
+    if (ignoreKey !== 'media' && activeFilters.media !== 'all' && mediaType !== activeFilters.media) {
+      return false;
+    }
+
+    if (activeFilters.search) {
+      const searchableText = getSearchableText(nft);
+      if (!searchableText.includes(activeFilters.search)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
 function populateFilterOptions() {
   const artistSelect = document.getElementById('artist-filter');
   const chainSelect = document.getElementById('chain-filter');
   if (!artistSelect || !chainSelect) return;
 
+  const mediaSelect = document.getElementById('media-filter');
+
+  const artistBase = getFilteredNFTsForCounts('artist');
+  const chainBase = getFilteredNFTsForCounts('chain');
+  const mediaBase = getFilteredNFTsForCounts('media');
+
   const artists = new Map();
   const chains = new Map();
   const mediaCounts = new Map();
-  let visibleTotal = 0;
 
-  totalNFTs.forEach((nft) => {
-    if (nft.hidden) return;
-    visibleTotal += 1;
+  artistBase.forEach((nft) => {
     const artist = getArtistValue(nft);
-    const chain = getChainValue(nft);
-    const mediaType = getMediaType(nft);
     if (artist) {
       artists.set(artist, (artists.get(artist) || 0) + 1);
     }
+  });
+
+  chainBase.forEach((nft) => {
+    const chain = getChainValue(nft);
     if (chain) {
       const normalized = normalizeChainValue(chain);
       if (!chains.has(normalized)) {
@@ -336,14 +372,26 @@ function populateFilterOptions() {
       }
       chains.get(normalized).count += 1;
     }
+  });
+
+  mediaBase.forEach((nft) => {
+    const mediaType = getMediaType(nft);
     mediaCounts.set(mediaType, (mediaCounts.get(mediaType) || 0) + 1);
   });
+
+  if (activeFilters.artist !== 'all' && !artists.has(activeFilters.artist)) {
+    artists.set(activeFilters.artist, 0);
+  }
+
+  if (activeFilters.chain !== 'all' && !chains.has(activeFilters.chain)) {
+    chains.set(activeFilters.chain, { label: formatChainLabel(activeFilters.chain), count: 0 });
+  }
 
   const sortedArtists = Array.from(artists.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   const sortedChains = Array.from(chains.entries()).sort((a, b) => a[1].label.localeCompare(b[1].label));
 
-  artistSelect.innerHTML = `<option value="all">All artists (${visibleTotal})</option>`;
-  chainSelect.innerHTML = `<option value="all">All chains (${visibleTotal})</option>`;
+  artistSelect.innerHTML = `<option value="all">All artists (${artistBase.length})</option>`;
+  chainSelect.innerHTML = `<option value="all">All chains (${chainBase.length})</option>`;
 
   sortedArtists.forEach(([artist, count]) => {
     const option = document.createElement('option');
@@ -359,10 +407,16 @@ function populateFilterOptions() {
     chainSelect.appendChild(option);
   });
 
-  const mediaSelect = document.getElementById('media-filter');
   if (mediaSelect) {
+    const allMediaCount = mediaBase.length;
+    const selectedMedia = activeFilters.media !== 'all' ? activeFilters.media : null;
+    const selectedMediaCount = selectedMedia ? mediaCounts.get(selectedMedia) : null;
+    if (selectedMedia && selectedMediaCount === undefined) {
+      mediaCounts.set(selectedMedia, 0);
+    }
+
     mediaSelect.innerHTML = `
-      <option value="all">All media (${visibleTotal})</option>
+      <option value="all">All media (${allMediaCount})</option>
       <option value="image">Images (${mediaCounts.get('image') || 0})</option>
       <option value="video">Videos (${mediaCounts.get('video') || 0})</option>
       <option value="gif">GIFs (${mediaCounts.get('gif') || 0})</option>
@@ -388,6 +442,8 @@ function applyFilters() {
     chain: chainSelect.value,
     media: mediaSelect.value
   };
+
+  populateFilterOptions();
 
   filteredNFTs = totalNFTs.filter((nft) => {
     if (nft.hidden) return false;
