@@ -340,9 +340,20 @@ async function openNftModal(nft) {
   const titleEl   = document.getElementById('modal-title');
   const artistEl  = document.getElementById('modal-artist');
   const mediaWrap = document.getElementById('modal-artwork-container');
+  const marketplaceLink = document.getElementById('modal-marketplace-link');
 
   titleEl.textContent  = nft.name || '';
   artistEl.textContent = nft.creator || '';
+  if (marketplaceLink) {
+    const marketplaceUrl = (nft.marketplace_url || nft.marketplaceUrl || '').trim();
+    if (marketplaceUrl) {
+      marketplaceLink.href = marketplaceUrl;
+      marketplaceLink.hidden = false;
+    } else {
+      marketplaceLink.removeAttribute('href');
+      marketplaceLink.hidden = true;
+    }
+  }
 
   let mediaUrl       = optimizeImageUrl600(nft.imageUrl || '');
   const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
