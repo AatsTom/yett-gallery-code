@@ -413,8 +413,8 @@
   font-weight: 600;
   text-transform: uppercase;
   font-style: normal;
-  font-size: 1.2rem !important;
-  padding: 15px 30px !important;
+  font-size: 1rem !important;
+  padding: 10px !important;
   cursor: pointer !important;
   text-decoration: none !important;
   display: inline-block !important;
