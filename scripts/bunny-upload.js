@@ -155,17 +155,6 @@ async function processNft(nft) {
   const mediaUrl = nft.imageUrl || '';
   if (!mediaUrl) return { updated: false, uploaded: false };
 
-  if (!nft.bunnyVideoId && nft.bunnyVideoUrl) {
-    const parsedVideoId = parseBunnyVideoIdFromUrl(nft.bunnyVideoUrl);
-    if (parsedVideoId) {
-      nft.bunnyVideoId = parsedVideoId;
-      if (!nft.bunnySourceUrl) {
-        nft.bunnySourceUrl = mediaUrl;
-      }
-      return { updated: true, uploaded: false };
-    }
-  }
-
   if (nft.bunnyVideoId) {
     if (!nft.bunnySourceUrl) {
       nft.bunnySourceUrl = mediaUrl;
@@ -220,6 +209,27 @@ async function run() {
   const raw = fs.readFileSync(INPUT_PATH, 'utf8');
   const data = safeJsonParse(raw);
   const items = Array.isArray(data) ? data : Object.values(data);
+
+  let backfilledCount = 0;
+  for (const nft of items) {
+    if (!nft?.bunnyVideoId && nft?.bunnyVideoUrl) {
+      const parsedVideoId = parseBunnyVideoIdFromUrl(nft.bunnyVideoUrl);
+      if (parsedVideoId) {
+        nft.bunnyVideoId = parsedVideoId;
+        backfilledCount += 1;
+      }
+    }
+  }
+
+  if (backfilledCount > 0) {
+    if (DRY_RUN) {
+      console.log(`Dry run: ${backfilledCount} bunnyVideoId values would be backfilled.`);
+    } else {
+      const output = Array.isArray(data) ? items : data;
+      fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2));
+      console.log(`Backfilled ${backfilledCount} bunnyVideoId values. Saved to ${OUTPUT_PATH}.`);
+    }
+  }
 
   let updatedCount = 0;
   for (const nft of items) {
