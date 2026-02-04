@@ -137,11 +137,34 @@ function buildBunnyUrl(videoId, quality = '480p') {
   return `https://${PULL_ZONE}.b-cdn.net/${videoId}/play_${quality}.mp4`;
 }
 
+function parseBunnyVideoIdFromUrl(bunnyVideoUrl) {
+  if (!bunnyVideoUrl) return '';
+  try {
+    const url = new URL(bunnyVideoUrl);
+    const [, videoId] = url.pathname.split('/');
+    return videoId || '';
+  } catch (error) {
+    const parts = bunnyVideoUrl.split('/');
+    return parts.length > 3 ? parts[3] : '';
+  }
+}
+
 async function processNft(nft) {
   if (!nft) return { updated: false, uploaded: false };
 
   const mediaUrl = nft.imageUrl || '';
   if (!mediaUrl) return { updated: false, uploaded: false };
+
+  if (!nft.bunnyVideoId && nft.bunnyVideoUrl) {
+    const parsedVideoId = parseBunnyVideoIdFromUrl(nft.bunnyVideoUrl);
+    if (parsedVideoId) {
+      nft.bunnyVideoId = parsedVideoId;
+      if (!nft.bunnySourceUrl) {
+        nft.bunnySourceUrl = mediaUrl;
+      }
+      return { updated: true, uploaded: false };
+    }
+  }
 
   if (nft.bunnyVideoId) {
     if (!nft.bunnySourceUrl) {
