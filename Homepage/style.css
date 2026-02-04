@@ -260,23 +260,37 @@ body {
     margin-top: 30px !important;
 }
 
-#discover-btn {
+#discover-btn,
+.marketplace-btn {
     background: #fff !important;
-  border: 3px solid #000 !important;
+    border: 3px solid #000 !important;
     color: #000 !important;
     font-family: "Outfit", sans-serif !important;
-  font-optical-sizing: auto;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-style: normal;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-style: normal;
     font-size: 1.2rem !important;
     padding: 15px 30px !important;
     cursor: pointer !important;
+    text-decoration: none !important;
+    display: inline-block !important;
 }
 
-#discover-btn:hover {
+#discover-btn:hover,
+.marketplace-btn:hover {
     background: #000 !important;
-  color: #fff !important;
+    color: #fff !important;
+}
+
+.modal-marketplace-container {
+  margin-top: 20px !important;
+  text-align: left !important;
+}
+
+.marketplace-btn {
+  font-size: 1rem !important;
+  padding: 10px !important;
 }
 
 
@@ -443,6 +457,9 @@ filter: drop-shadow(0px 0px 4px #000);
   }
   .modal-info-container {
     padding: 20px !important;
+    text-align: center !important;
+  }
+  .modal-marketplace-container {
     text-align: center !important;
   }
   #modal-title,

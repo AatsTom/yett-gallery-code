@@ -399,6 +399,32 @@
   text-align: left !important; /* left-align on desktop */
 }
 
+.modal-marketplace-container {
+  margin-top: 20px !important;
+  text-align: left !important;
+}
+
+.marketplace-btn {
+  background: #fff !important;
+  border: 3px solid #000 !important;
+  color: #000 !important;
+  font-family: "Outfit", sans-serif !important;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-style: normal;
+  font-size: 1rem !important;
+  padding: 10px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+.marketplace-btn:hover {
+  background: #000 !important;
+  color: #fff !important;
+}
+
 #modal-title {
   font-family: "Outfit", sans-serif;
   font-optical-sizing: auto;
@@ -433,6 +459,9 @@
   }
   .modal-info-container {
     padding: 20px !important;
+    text-align: center !important;
+  }
+  .modal-marketplace-container {
     text-align: center !important;
   }
   #modal-title,
