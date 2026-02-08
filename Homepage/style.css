@@ -25,6 +25,7 @@ body {
     width: 36vw !important;
     max-width: 600px !important;
     min-width: 320px !important;
+    overflow: hidden !important;
 }
 
 #featured-artwork-container .featured-media-frame {
@@ -33,23 +34,28 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    overflow: hidden !important;
 }
 
 #featured-artwork-container .featured-media-content {
     position: relative !important;
-    display: inline-flex !important;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
+    overflow: hidden !important;
 }
 
 #featured-artwork-container .featured-media-content > img,
 #featured-artwork-container .featured-media-content > video,
+#featured-artwork-container .featured-media-content > div,
 #featured-artwork-container .featured-media-content > div > img,
 #featured-artwork-container .featured-media-content > div > video {
-    width: auto !important;
-    height: auto !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
