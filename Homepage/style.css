@@ -10,7 +10,7 @@ body {
     display: flex !important;
     flex-direction: row !important;
     width: 100% !important;
-    max-width: 1100px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
     position: relative !important;
 }
