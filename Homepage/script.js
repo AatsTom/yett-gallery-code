@@ -305,8 +305,10 @@ async function displayFeaturedArtwork() {
 
   featuredContainer.innerHTML = `
     <div class="featured-media-frame" style="position:relative;">
-      ${mediaElement}
-      ${chainIconMarkup}
+      <div class="featured-media-content" style="position:relative;">
+        ${mediaElement}
+        ${chainIconMarkup}
+      </div>
     </div>
   `;
   featuredContainer.onclick = () => openNftModal(nft);
