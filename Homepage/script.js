@@ -203,7 +203,7 @@ function mergeNFTData() {
   });
 }
 
-async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft, targetWidth = 600) {
+async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft, targetWidth = 600, fitMode = 'cover') {
   try {
     const bunnyPreviewUrl = getBunnyPlaybackUrl(nft, '480p');
     const bunnyFullUrl = getBunnyPlaybackUrl(nft, isMobileDevice() ? '480p' : '720p');
@@ -213,7 +213,7 @@ async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft, target
       if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
         return `
           <video muted autoplay playsinline
-                 style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
+                 style="max-width:100%;aspect-ratio:1/1;object-fit:${fitMode};object-position:center;">
             <source src="${previewVideoUrl}" type="video/mp4">
             <img src="${placeholderUrl}" alt="${nftName}">
           </video>
@@ -246,7 +246,7 @@ async function createMediaElement(mediaUrl, placeholderUrl, nftName, nft, target
       if (/\.(mp4|mov)$/i.test(placeholderUrl)) {
         return `
           <video muted autoplay playsinline
-                 style="max-width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center;">
+                 style="max-width:100%;aspect-ratio:1/1;object-fit:${fitMode};object-position:center;">
             <source src="${placeholderUrl}" type="video/mp4">
             <img src="${optimizedMediaUrl}" alt="${nftName}">
           </video>
@@ -301,10 +301,10 @@ async function displayFeaturedArtwork() {
   const chainIconMarkup = chainIcon
     ? `<img src="${chainIcon.url}" class="chain-icon" alt="${chainIcon.label} chain">`
     : '';
-  const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 600);
+  const mediaElement = await createMediaElement(mediaUrl, placeholderUrl, nft.name, nft, 600, 'contain');
 
   featuredContainer.innerHTML = `
-    <div style="position:relative;">
+    <div class="featured-media-frame" style="position:relative;">
       ${mediaElement}
       ${chainIconMarkup}
     </div>
