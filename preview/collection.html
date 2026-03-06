@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collection — Yett's Gallery Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface-hover: #1f1f1f;
+      --text-primary: #f0f0f0;
+      --text-secondary: #888;
+      --border: rgba(255,255,255,0.08);
+      --white: #ffffff;
+      --sidebar-width: 272px;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Outfit', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      background: rgba(13,13,13,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+    /* ─── PAGE LAYOUT ─── */
+    .page-layout {
+      display: flex;
+      align-items: flex-start;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 32px 28px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .sidebar-section { display: flex; flex-direction: column; gap: 10px; }
+    .sidebar-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 14px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: var(--text-secondary); }
+    .search-input:focus { border-color: rgba(255,255,255,0.28); }
+
+    .filter-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 14px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 300;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: rgba(255,255,255,0.28); }
+    .filter-select option { background: #1a1a1a; }
+
+    /* Chain checkboxes */
+    .chain-list { display: flex; flex-direction: column; gap: 6px; }
+    .chain-check-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border: 1px solid transparent;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+    .chain-check-label:hover { border-color: var(--border); background: var(--surface); }
+    .chain-check-label input[type="checkbox"] { display: none; }
+    .chain-check-label.checked { color: var(--text-primary); border-color: rgba(255,255,255,0.18); }
+    .chain-check-box {
+      width: 16px; height: 16px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .chain-check-label.checked .chain-check-box {
+      background: var(--white);
+      border-color: var(--white);
+    }
+    .chain-check-box::after {
+      content: '';
+      width: 8px; height: 5px;
+      border-left: 2px solid #0d0d0d;
+      border-bottom: 2px solid #0d0d0d;
+      transform: rotate(-45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .chain-check-label.checked .chain-check-box::after { opacity: 1; }
+    .chain-icon-sm {
+      width: 18px; height: 18px;
+      object-fit: contain; border-radius: 50%;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.2s;
+      text-align: left;
+    }
+    .clear-btn:hover { color: var(--white); }
+
+    /* Mobile filter toggle */
+    .filter-toggle-mobile {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 18px;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      padding: 0 32px 60px;
+    }
+
+    .collection-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 32px 0 28px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .collection-title-wrap {}
+    .collection-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1;
+    }
+    .collection-count {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sort-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .sort-select option { background: #1a1a1a; }
+
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .view-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 7px 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: color 0.2s, background 0.2s;
+      line-height: 1;
+    }
+    .view-btn.active { background: var(--surface); color: var(--white); }
+    .view-btn + .view-btn { border-left: 1px solid var(--border); }
+
+    /* ─── MASONRY GRID ─── */
+    .nft-masonry {
+      columns: 3;
+      column-gap: 14px;
+    }
+    @media (max-width: 1100px) { .nft-masonry { columns: 2; } }
+
+    /* ─── LIST VIEW ─── */
+    .nft-list { display: flex; flex-direction: column; gap: 1px; }
+    .nft-list-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .nft-list-item:hover { border-color: var(--border); background: var(--surface-hover); }
+    .nft-list-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .nft-list-info { flex: 1; min-width: 0; }
+    .nft-list-title { font-size: 0.95rem; color: var(--text-primary); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nft-list-artist { font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px; }
+    .nft-list-chain { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .nft-list-chain img { width: 20px; height: 20px; object-fit: contain; border-radius: 50%; }
+    .nft-list-chain span { font-size: 0.78rem; color: var(--text-secondary); text-transform: capitalize; }
+
+    /* ─── CARDS ─── */
+    .nft-card {
+      break-inside: avoid;
+      margin-bottom: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .nft-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .nft-card:hover .card-reveal { opacity: 1; }
+    .nft-card:hover .card-image-wrap img { transform: scale(1.03); }
+
+    .card-image-wrap { position: relative; overflow: hidden; }
+    .card-image-wrap img {
+      width: 100%; display: block; object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .card-reveal {
+      position: absolute; inset: 0;
+      background: rgba(13,13,13,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .card-reveal-btn {
+      background: var(--white); color: var(--bg);
+      padding: 9px 20px; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      border: none; cursor: pointer;
+    }
+    .chain-badge {
+      position: absolute; top: 10px; left: 10px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(13,13,13,0.78); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .chain-badge img { width: 16px; height: 16px; object-fit: contain; }
+
+    .card-info {
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .card-title { font-size: 0.9rem; font-weight: 400; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .card-artist { font-size: 0.76rem; color: var(--text-secondary); font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 80px 0;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    .empty-state p { font-size: 1.1rem; margin-bottom: 8px; }
+    .empty-state small { font-size: 0.85rem; }
+
+    /* ─── MODAL ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      max-width: 1060px; width: 100%;
+      max-height: 90vh;
+      display: flex; overflow: hidden;
+      transform: translateY(16px);
+      transition: transform 0.25s ease;
+    }
+    .modal-backdrop.open .modal { transform: translateY(0); }
+    .modal-image-side {
+      flex: 0 0 50%;
+      background: #0a0a0a;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .modal-image-side img { width: 100%; height: 100%; object-fit: contain; max-height: 90vh; }
+    .modal-info-side {
+      flex: 0 0 50%;
+      padding: 48px 44px;
+      display: flex; flex-direction: column;
+      justify-content: center; gap: 20px;
+      overflow-y: auto;
+    }
+    .modal-label { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); }
+    .modal-title { font-family: var(--font-display); font-size: 2.2rem; font-weight: 600; line-height: 1.1; color: var(--white); }
+    .modal-artist { font-size: 1rem; color: var(--text-secondary); font-weight: 300; }
+    .modal-chain { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.82rem; }
+    .modal-chain img { width: 20px; height: 20px; object-fit: contain; }
+    .modal-divider { height: 1px; background: var(--border); }
+    .modal-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1.5px solid rgba(255,255,255,0.3); color: var(--white);
+      padding: 14px 26px; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+      transition: border-color 0.2s, background 0.2s; align-self: flex-start;
+    }
+    .modal-cta:hover { border-color: var(--white); background: rgba(255,255,255,0.06); }
+    .modal-close {
+      position: absolute; top: 18px; right: 18px;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.08); border: none;
+      color: var(--white); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.16); }
+    .modal-wrapper { position: relative; display: flex; flex-direction: column; }
+
+    /* ─── GRAIN ─── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025; pointer-events: none; z-index: 9999;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 860px) {
+      .sidebar { display: none; position: fixed; top: 0; left: 0; bottom: 0; z-index: 300; width: 280px; padding-top: 60px; }
+      .sidebar.open { display: flex; }
+      .filter-toggle-mobile { display: flex; }
+      .main-content { padding: 0 16px 40px; }
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .nft-masonry { columns: 2; }
+      .modal { flex-direction: column; max-height: 95vh; }
+      .modal-image-side { flex: 0 0 auto; max-height: 40vh; }
+      .modal-info-side { padding: 24px 20px; }
+      .modal-title { font-size: 1.7rem; }
+    }
+    @media (max-width: 480px) {
+      .nft-masonry { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">Yett's Gallery</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="collection.html" class="active">Collection</a></li>
+  </ul>
+</nav>
+
+<!-- LAYOUT -->
+<div class="page-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Search -->
+    <div class="sidebar-section">
+      <label class="sidebar-label" for="searchInput">Search</label>
+      <input type="search" class="search-input" id="searchInput" placeholder="Name or artist…" />
+    </div>
+
+    <!-- Artist filter -->
+    <div class="sidebar-section">
+      <label class="sidebar-label" for="artistFilter">Artist</label>
+      <select class="filter-select" id="artistFilter">
+        <option value="">All Artists</option>
+      </select>
+    </div>
+
+    <!-- Chain filter -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">Blockchain</span>
+      <div class="chain-list" id="chainList"></div>
+    </div>
+
+    <!-- Media type -->
+    <div class="sidebar-section">
+      <label class="sidebar-label" for="mediaFilter">Media Type</label>
+      <select class="filter-select" id="mediaFilter">
+        <option value="">All Types</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+    </div>
+
+    <!-- Clear -->
+    <div class="sidebar-section">
+      <button class="clear-btn" id="clearBtn">Clear all filters</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <!-- Mobile filter toggle -->
+    <div style="padding: 16px 0 0; display: flex; gap: 10px; align-items: center;">
+      <button class="filter-toggle-mobile" id="filterToggleMobile">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Filters
+      </button>
+    </div>
+
+    <div class="collection-header">
+      <div class="collection-title-wrap">
+        <h1 class="collection-title">Collection</h1>
+        <p class="collection-count" id="collectionCount">— works</p>
+      </div>
+      <div class="header-controls">
+        <div class="view-toggle">
+          <button class="view-btn active" id="btnGrid" title="Grid view">&#9783;</button>
+          <button class="view-btn" id="btnList" title="List view">&#9776;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div class="nft-masonry" id="nftGrid"></div>
+
+    <!-- LIST VIEW -->
+    <div class="nft-list" id="nftList" style="display:none;"></div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <p>No results found</p>
+      <small>Try adjusting your filters</small>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+  <div class="modal-wrapper">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <div class="modal">
+      <div class="modal-image-side"><img id="modalImg" src="" alt="" /></div>
+      <div class="modal-info-side">
+        <span class="modal-label">NFT</span>
+        <h2 class="modal-title" id="modalTitle">—</h2>
+        <p class="modal-artist" id="modalArtist">—</p>
+        <div class="modal-chain" id="modalChain"></div>
+        <div class="modal-divider"></div>
+        <a class="modal-cta" id="modalLink" href="#" target="_blank" rel="noopener">View on Marketplace &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SAMPLE DATA ───────────────────────────────────────────────────────────────
+const NFTS = [
+  { name: "Chromatic Dream #42", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft01/600/600", chain: "ethereum", marketplace_url: "#" },
+  { name: "Void Protocol", creator: "0xSynthwave", imageUrl: "https://picsum.photos/seed/nft02/600/800", chain: "base", marketplace_url: "#" },
+  { name: "Neural Garden IV", creator: "ArtificialMuse", imageUrl: "https://picsum.photos/seed/nft03/600/600", chain: "tezos", marketplace_url: "#" },
+  { name: "Solstice Bloom", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft04/600/750", chain: "solana", marketplace_url: "#" },
+  { name: "Fragment #007", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft05/600/600", chain: "ethereum", marketplace_url: "#" },
+  { name: "Neon Meridian", creator: "VoxelDreamer", imageUrl: "https://picsum.photos/seed/nft06/600/500", chain: "matic", marketplace_url: "#" },
+  { name: "Parallel Self", creator: "0xSynthwave", imageUrl: "https://picsum.photos/seed/nft07/600/600", chain: "optimism", marketplace_url: "#" },
+  { name: "Quiet Signal", creator: "ArtificialMuse", imageUrl: "https://picsum.photos/seed/nft08/600/700", chain: "zora", marketplace_url: "#" },
+  { name: "Obsidian Tide", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft09/600/600", chain: "ethereum", marketplace_url: "#" },
+  { name: "Digital Seraph", creator: "GlitchPainter", imageUrl: "https://picsum.photos/seed/nft10/600/600", chain: "base", marketplace_url: "#" },
+  { name: "Recursive Echo", creator: "VoxelDreamer", imageUrl: "https://picsum.photos/seed/nft11/600/800", chain: "tezos", marketplace_url: "#" },
+  { name: "Last Light #3", creator: "GlitchPainter", imageUrl: "https://picsum.photos/seed/nft12/600/600", chain: "ordinals", marketplace_url: "#" },
+  { name: "Liminal Space", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft13/600/550", chain: "ethereum", marketplace_url: "#" },
+  { name: "Synthetic Bloom", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft14/600/600", chain: "solana", marketplace_url: "#" },
+  { name: "Hyperreal #1", creator: "GlitchPainter", imageUrl: "https://picsum.photos/seed/nft15/600/700", chain: "base", marketplace_url: "#" },
+  { name: "Abstract Meridian", creator: "0xSynthwave", imageUrl: "https://picsum.photos/seed/nft16/600/600", chain: "optimism", marketplace_url: "#" },
+  { name: "Tessellation XI", creator: "ArtificialMuse", imageUrl: "https://picsum.photos/seed/nft17/600/600", chain: "tezos", marketplace_url: "#" },
+  { name: "Dark Matter Study", creator: "VoxelDreamer", imageUrl: "https://picsum.photos/seed/nft18/600/800", chain: "zora", marketplace_url: "#" },
+  { name: "Signal Noise #9", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft19/600/600", chain: "matic", marketplace_url: "#" },
+  { name: "Emergence", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft20/600/650", chain: "ethereum", marketplace_url: "#" },
+];
+
+const CHAIN_ICONS = {
+  ethereum: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/240px-Ethereum-icon-purple.svg.png",
+  matic: "https://cryptologos.cc/logos/polygon-matic-logo.png",
+  base: "https://repository-images.githubusercontent.com/627367698/b547f4d2-3936-4555-8ddc-37f2b9e55e72",
+  zora: "https://pbs.twimg.com/profile_images/1616867326312947712/tLrFYZhJ_400x400.jpg",
+  optimism: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png",
+  ordinals: "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
+  solana: "https://cryptologos.cc/logos/solana-sol-logo.png",
+  tezos: "https://cryptologos.cc/logos/tezos-xtz-logo.png",
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────────
+let activeChains = new Set();
+let viewMode = 'grid';
+let filtered = [...NFTS];
+
+// ─── FILTERS ───────────────────────────────────────────────────────────────────
+function populateArtists() {
+  const sel = document.getElementById('artistFilter');
+  const artists = [...new Set(NFTS.map(n => n.creator))].sort();
+  artists.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    sel.appendChild(opt);
+  });
+}
+
+function populateChains() {
+  const list = document.getElementById('chainList');
+  const chains = [...new Set(NFTS.map(n => n.chain))].sort();
+  chains.forEach(chain => {
+    const label = document.createElement('label');
+    label.className = 'chain-check-label';
+    label.dataset.chain = chain;
+    const icon = CHAIN_ICONS[chain];
+    label.innerHTML = `
+      <input type="checkbox" value="${chain}" />
+      <div class="chain-check-box"></div>
+      ${icon ? `<img class="chain-icon-sm" src="${icon}" alt="${chain}" />` : ''}
+      <span style="text-transform:capitalize">${chain}</span>
+    `;
+    label.addEventListener('click', () => {
+      if (activeChains.has(chain)) { activeChains.delete(chain); label.classList.remove('checked'); }
+      else { activeChains.add(chain); label.classList.add('checked'); }
+      applyFilters();
+    });
+    list.appendChild(label);
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const artist = document.getElementById('artistFilter').value;
+  const media = document.getElementById('mediaFilter').value;
+
+  filtered = NFTS.filter(n => {
+    if (q && !n.name.toLowerCase().includes(q) && !n.creator.toLowerCase().includes(q)) return false;
+    if (artist && n.creator !== artist) return false;
+    if (activeChains.size > 0 && !activeChains.has(n.chain)) return false;
+    // For demo, all are 'image' type
+    if (media === 'video' && !n.isVideo) return false;
+    return true;
+  });
+
+  renderGrid();
+  renderList();
+  document.getElementById('collectionCount').textContent = `${filtered.length} work${filtered.length !== 1 ? 's' : ''}`;
+  document.getElementById('emptyState').style.display = filtered.length === 0 ? 'block' : 'none';
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('artistFilter').value = '';
+  document.getElementById('mediaFilter').value = '';
+  activeChains.clear();
+  document.querySelectorAll('.chain-check-label').forEach(l => l.classList.remove('checked'));
+  filtered = [...NFTS];
+  renderGrid();
+  renderList();
+  document.getElementById('collectionCount').textContent = `${NFTS.length} works`;
+  document.getElementById('emptyState').style.display = 'none';
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────────
+function makeCard(nft) {
+  const card = document.createElement('div');
+  card.className = 'nft-card';
+  const icon = CHAIN_ICONS[nft.chain];
+  card.innerHTML = `
+    <div class="card-image-wrap">
+      <img src="${nft.imageUrl}" alt="${nft.name}" loading="lazy" />
+      ${icon ? `<div class="chain-badge"><img src="${icon}" alt="${nft.chain}" /></div>` : ''}
+      <div class="card-reveal"><button class="card-reveal-btn">View</button></div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${nft.name}</div>
+      <div class="card-artist">${nft.creator}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => openModal(nft));
+  return card;
+}
+
+function makeListItem(nft) {
+  const item = document.createElement('div');
+  item.className = 'nft-list-item';
+  const icon = CHAIN_ICONS[nft.chain];
+  item.innerHTML = `
+    <img class="nft-list-thumb" src="${nft.imageUrl}" alt="${nft.name}" loading="lazy" />
+    <div class="nft-list-info">
+      <div class="nft-list-title">${nft.name}</div>
+      <div class="nft-list-artist">${nft.creator}</div>
+    </div>
+    <div class="nft-list-chain">
+      ${icon ? `<img src="${icon}" alt="${nft.chain}" />` : ''}
+      <span>${nft.chain}</span>
+    </div>
+  `;
+  item.addEventListener('click', () => openModal(nft));
+  return item;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('nftGrid');
+  grid.innerHTML = '';
+  filtered.forEach(nft => grid.appendChild(makeCard(nft)));
+}
+
+function renderList() {
+  const list = document.getElementById('nftList');
+  list.innerHTML = '';
+  filtered.forEach(nft => list.appendChild(makeListItem(nft)));
+}
+
+// ─── VIEW TOGGLE ───────────────────────────────────────────────────────────────
+document.getElementById('btnGrid').addEventListener('click', () => {
+  viewMode = 'grid';
+  document.getElementById('nftGrid').style.display = '';
+  document.getElementById('nftList').style.display = 'none';
+  document.getElementById('btnGrid').classList.add('active');
+  document.getElementById('btnList').classList.remove('active');
+});
+document.getElementById('btnList').addEventListener('click', () => {
+  viewMode = 'list';
+  document.getElementById('nftGrid').style.display = 'none';
+  document.getElementById('nftList').style.display = '';
+  document.getElementById('btnGrid').classList.remove('active');
+  document.getElementById('btnList').classList.add('active');
+});
+
+// ─── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(nft) {
+  document.getElementById('modalImg').src = nft.imageUrl;
+  document.getElementById('modalImg').alt = nft.name;
+  document.getElementById('modalTitle').textContent = nft.name;
+  document.getElementById('modalArtist').textContent = nft.creator;
+  document.getElementById('modalLink').href = nft.marketplace_url || '#';
+  const chainEl = document.getElementById('modalChain');
+  const icon = CHAIN_ICONS[nft.chain];
+  chainEl.innerHTML = icon
+    ? `<img src="${icon}" alt="${nft.chain}" /><span style="text-transform:capitalize">${nft.chain}</span>`
+    : `<span style="text-transform:capitalize">${nft.chain}</span>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalBackdrop')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── MOBILE SIDEBAR ────────────────────────────────────────────────────────────
+document.getElementById('filterToggleMobile').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+// ─── EVENT LISTENERS ───────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('artistFilter').addEventListener('change', applyFilters);
+document.getElementById('mediaFilter').addEventListener('change', applyFilters);
+document.getElementById('clearBtn').addEventListener('click', clearFilters);
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+populateArtists();
+populateChains();
+filtered = [...NFTS];
+renderGrid();
+renderList();
+document.getElementById('collectionCount').textContent = `${NFTS.length} works`;
+</script>
+</body>
+</html>

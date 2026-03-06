@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yett's Gallery — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface-hover: #1f1f1f;
+      --text-primary: #f0f0f0;
+      --text-secondary: #888;
+      --border: rgba(255,255,255,0.08);
+      --white: #ffffff;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Outfit', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 48px;
+      background: linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: -20px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(28px) brightness(0.18);
+      transform: scale(1.1);
+      transition: background-image 1s ease;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(13,13,13,0.8) 100%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    .hero-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+    .hero-artwork-frame {
+      position: relative;
+      width: min(420px, 72vw);
+      aspect-ratio: 1;
+      box-shadow: 0 0 0 1px var(--border), 0 32px 80px rgba(0,0,0,0.7);
+    }
+    .hero-artwork-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-artwork-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(13,13,13,0.85);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(6px);
+      padding: 4px 10px;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .hero-text { text-align: center; }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .hero-artist {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.06em;
+      font-weight: 300;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      color: var(--bg);
+      padding: 14px 34px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s, transform 0.15s;
+      border: 2px solid var(--white);
+    }
+    .hero-cta:hover { background: transparent; color: var(--white); transform: translateY(-2px); }
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--text-secondary), transparent);
+      animation: scrollPulse 2s ease infinite;
+    }
+    @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(0.6)} }
+
+    /* ─── STATS ─── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 28px 48px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      text-align: center;
+      padding: 0 52px;
+    }
+    .stat + .stat {
+      border-left: 1px solid var(--border);
+    }
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1;
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 60px 48px 28px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--white);
+      letter-spacing: 0.01em;
+    }
+    .section-link {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-link:hover { color: var(--white); }
+
+    /* ─── MASONRY GALLERY ─── */
+    .masonry-grid {
+      padding: 0 40px 60px;
+      columns: 3;
+      column-gap: 16px;
+    }
+    @media (max-width: 1024px) { .masonry-grid { columns: 2; } }
+    @media (max-width: 600px) { .masonry-grid { columns: 1; padding: 0 16px 40px; } }
+
+    .nft-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .nft-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.22);
+    }
+    .nft-card:hover .card-reveal { opacity: 1; }
+
+    .card-image-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+    .card-image-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .nft-card:hover .card-image-wrap img { transform: scale(1.03); }
+
+    .card-reveal {
+      position: absolute;
+      inset: 0;
+      background: rgba(13,13,13,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+    .card-reveal-btn {
+      background: var(--white);
+      color: var(--bg);
+      padding: 10px 22px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+    }
+
+    .chain-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(13,13,13,0.75);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chain-badge img { width: 18px; height: 18px; object-fit: contain; }
+
+    .card-info {
+      padding: 14px 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .card-artist {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─── CTA STRIP ─── */
+    .cta-strip {
+      border-top: 1px solid var(--border);
+      padding: 72px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      text-align: center;
+    }
+    .cta-strip-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1.15;
+      max-width: 640px;
+    }
+    .cta-strip-title em { font-style: italic; color: var(--text-secondary); }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid rgba(255,255,255,0.35);
+      color: var(--white);
+      padding: 14px 34px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.06); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ─── MODAL ─── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      max-width: 1060px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      overflow: hidden;
+      transform: translateY(16px);
+      transition: transform 0.25s ease;
+    }
+    .modal-backdrop.open .modal { transform: translateY(0); }
+
+    .modal-image-side {
+      flex: 0 0 50%;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .modal-image-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      max-height: 90vh;
+    }
+    .modal-info-side {
+      flex: 0 0 50%;
+      padding: 48px 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .modal-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--white);
+    }
+    .modal-artist {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+    }
+    .modal-chain {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+    }
+    .modal-chain img { width: 20px; height: 20px; object-fit: contain; }
+    .modal-divider { height: 1px; background: var(--border); }
+    .modal-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      color: var(--white);
+      padding: 14px 26px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+      align-self: flex-start;
+    }
+    .modal-cta:hover { border-color: var(--white); background: rgba(255,255,255,0.06); }
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--white);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.15); }
+    .modal-wrapper { position: relative; display: flex; flex-direction: column; }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 20px; }
+      .nav-links { display: none; }
+      .stats-bar { flex-wrap: wrap; gap: 24px; padding: 24px 20px; }
+      .stat { padding: 0 28px; }
+      .section-header { padding: 40px 20px 20px; }
+      .cta-strip { padding: 48px 20px; }
+      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+      .modal { flex-direction: column; max-height: 95vh; }
+      .modal-image-side { flex: 0 0 auto; max-height: 45vh; }
+      .modal-info-side { padding: 28px 24px; }
+      .modal-title { font-size: 1.8rem; }
+    }
+
+    /* ─── GRAIN TEXTURE ─── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">Yett's Gallery</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="collection.html">Collection</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-label">Featured Work</span>
+    <div class="hero-artwork-frame">
+      <img id="heroImg" src="" alt="Featured NFT" />
+      <div class="chain-badge" id="heroChainBadge"></div>
+      <div class="hero-artwork-badge">Featured</div>
+    </div>
+    <div class="hero-text">
+      <h1 class="hero-title" id="heroTitle">—</h1>
+      <p class="hero-artist" id="heroArtist">—</p>
+    </div>
+    <a href="collection.html" class="hero-cta">Explore Collection &rarr;</a>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat"><span class="stat-number" id="statWorks">—</span><span class="stat-label">Artworks</span></div>
+  <div class="stat"><span class="stat-number" id="statArtists">—</span><span class="stat-label">Artists</span></div>
+  <div class="stat"><span class="stat-number" id="statChains">—</span><span class="stat-label">Blockchains</span></div>
+</div>
+
+<!-- GALLERY GRID -->
+<div class="section-header">
+  <h2 class="section-title">The Collection</h2>
+  <a href="collection.html" class="section-link">View All &rarr;</a>
+</div>
+<div class="masonry-grid" id="galleryGrid"></div>
+
+<!-- CTA STRIP -->
+<div class="cta-strip">
+  <p class="cta-strip-title">Every piece tells a story.<br><em>Browse the full archive.</em></p>
+  <a href="collection.html" class="btn-outline">Open Collection &rarr;</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Yett's Gallery</span>
+  <span>yett.gallery &mdash; NFT Collection</span>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="NFT Detail">
+  <div class="modal-wrapper">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <div class="modal">
+      <div class="modal-image-side">
+        <img id="modalImg" src="" alt="" />
+      </div>
+      <div class="modal-info-side">
+        <span class="modal-label">NFT</span>
+        <h2 class="modal-title" id="modalTitle">—</h2>
+        <p class="modal-artist" id="modalArtist">—</p>
+        <div class="modal-chain" id="modalChain"></div>
+        <div class="modal-divider"></div>
+        <a class="modal-cta" id="modalLink" href="#" target="_blank" rel="noopener">View on Marketplace &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SAMPLE DATA ───────────────────────────────────────────────────────────────
+const NFTS = [
+  { name: "Chromatic Dream #42", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft01/600/600", chain: "ethereum", marketplace_url: "#", featured: true },
+  { name: "Void Protocol", creator: "0xSynthwave", imageUrl: "https://picsum.photos/seed/nft02/600/800", chain: "base", marketplace_url: "#" },
+  { name: "Neural Garden IV", creator: "ArtificialMuse", imageUrl: "https://picsum.photos/seed/nft03/600/600", chain: "tezos", marketplace_url: "#" },
+  { name: "Solstice Bloom", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft04/600/750", chain: "solana", marketplace_url: "#" },
+  { name: "Fragment #007", creator: "PixelAlchemy", imageUrl: "https://picsum.photos/seed/nft05/600/600", chain: "ethereum", marketplace_url: "#" },
+  { name: "Neon Meridian", creator: "VoxelDreamer", imageUrl: "https://picsum.photos/seed/nft06/600/500", chain: "matic", marketplace_url: "#" },
+  { name: "Parallel Self", creator: "0xSynthwave", imageUrl: "https://picsum.photos/seed/nft07/600/600", chain: "optimism", marketplace_url: "#" },
+  { name: "Quiet Signal", creator: "ArtificialMuse", imageUrl: "https://picsum.photos/seed/nft08/600/700", chain: "zora", marketplace_url: "#" },
+  { name: "Obsidian Tide", creator: "CryptoFlora", imageUrl: "https://picsum.photos/seed/nft09/600/600", chain: "ethereum", marketplace_url: "#" },
+  { name: "Digital Seraph", creator: "GlitchPainter", imageUrl: "https://picsum.photos/seed/nft10/600/600", chain: "base", marketplace_url: "#" },
+  { name: "Recursive Echo", creator: "VoxelDreamer", imageUrl: "https://picsum.photos/seed/nft11/600/800", chain: "tezos", marketplace_url: "#" },
+  { name: "Last Light #3", creator: "GlitchPainter", imageUrl: "https://picsum.photos/seed/nft12/600/600", chain: "ordinals", marketplace_url: "#" },
+];
+
+const CHAIN_ICONS = {
+  ethereum: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/240px-Ethereum-icon-purple.svg.png",
+  matic: "https://cryptologos.cc/logos/polygon-matic-logo.png",
+  base: "https://repository-images.githubusercontent.com/627367698/b547f4d2-3936-4555-8ddc-37f2b9e55e72",
+  zora: "https://pbs.twimg.com/profile_images/1616867326312947712/tLrFYZhJ_400x400.jpg",
+  optimism: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png",
+  ordinals: "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
+  solana: "https://cryptologos.cc/logos/solana-sol-logo.png",
+  tezos: "https://cryptologos.cc/logos/tezos-xtz-logo.png",
+};
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────────
+function chainBadgeHTML(chain) {
+  const icon = CHAIN_ICONS[chain];
+  if (!icon) return '';
+  return `<div class="chain-badge"><img src="${icon}" alt="${chain}" /></div>`;
+}
+
+// ─── HERO ──────────────────────────────────────────────────────────────────────
+function initHero() {
+  const featured = NFTS.find(n => n.featured) || NFTS[0];
+  document.getElementById('heroBg').style.backgroundImage = `url(${featured.imageUrl})`;
+  document.getElementById('heroImg').src = featured.imageUrl;
+  document.getElementById('heroImg').alt = featured.name;
+  document.getElementById('heroTitle').textContent = featured.name;
+  document.getElementById('heroArtist').textContent = featured.creator;
+  const badge = document.getElementById('heroChainBadge');
+  const icon = CHAIN_ICONS[featured.chain];
+  if (icon) badge.innerHTML = `<img src="${icon}" alt="${featured.chain}" />`;
+
+  document.getElementById('heroImg').addEventListener('click', () => openModal(featured));
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────────────────
+function initStats() {
+  document.getElementById('statWorks').textContent = NFTS.length;
+  const artists = new Set(NFTS.map(n => n.creator));
+  document.getElementById('statArtists').textContent = artists.size;
+  const chains = new Set(NFTS.map(n => n.chain));
+  document.getElementById('statChains').textContent = chains.size;
+}
+
+// ─── GALLERY ───────────────────────────────────────────────────────────────────
+function initGallery() {
+  const grid = document.getElementById('galleryGrid');
+  const shuffled = [...NFTS].sort(() => Math.random() - 0.5).slice(0, 9);
+
+  shuffled.forEach(nft => {
+    const card = document.createElement('div');
+    card.className = 'nft-card';
+    card.innerHTML = `
+      <div class="card-image-wrap">
+        <img src="${nft.imageUrl}" alt="${nft.name}" loading="lazy" />
+        ${chainBadgeHTML(nft.chain)}
+        <div class="card-reveal"><button class="card-reveal-btn">View</button></div>
+      </div>
+      <div class="card-info">
+        <div class="card-title">${nft.name}</div>
+        <div class="card-artist">${nft.creator}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => openModal(nft));
+    grid.appendChild(card);
+  });
+}
+
+// ─── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(nft) {
+  document.getElementById('modalImg').src = nft.imageUrl;
+  document.getElementById('modalImg').alt = nft.name;
+  document.getElementById('modalTitle').textContent = nft.name;
+  document.getElementById('modalArtist').textContent = nft.creator;
+  document.getElementById('modalLink').href = nft.marketplace_url || '#';
+
+  const chainEl = document.getElementById('modalChain');
+  const icon = CHAIN_ICONS[nft.chain];
+  chainEl.innerHTML = icon
+    ? `<img src="${icon}" alt="${nft.chain}" /><span style="text-transform:capitalize">${nft.chain}</span>`
+    : `<span style="text-transform:capitalize">${nft.chain}</span>`;
+
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalBackdrop')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+initHero();
+initStats();
+initGallery();
+</script>
+</body>
+</html>
