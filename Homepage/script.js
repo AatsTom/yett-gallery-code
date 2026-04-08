@@ -180,7 +180,7 @@ function updateStats() {
 }
 
 async function fetchModifiedNFTs() {
-  const fileUrl  = 'https://api.github.com/repos/AatsTom/nft-collection-backend/contents/modifiedNFTData.json';
+  const fileUrl  = 'https://api.github.com/repos/Yett-Et/nft-collection-backend/contents/modifiedNFTData.json';
   const resp     = await fetch(`/wp-json/nft/v1/fetch-data?url=${encodeURIComponent(fileUrl)}`);
   const result   = await resp.json();
   if (result.status === 200) modifiedNFTs = result.data;
@@ -188,7 +188,7 @@ async function fetchModifiedNFTs() {
 }
 
 async function fetchOriginalNFTs() {
-  const fileUrl  = 'https://api.github.com/repos/AatsTom/nft-collection-backend/contents/nftData.json';
+  const fileUrl  = 'https://api.github.com/repos/Yett-Et/nft-collection-backend/contents/nftData.json';
   const resp     = await fetch(`/wp-json/nft/v1/fetch-data?url=${encodeURIComponent(fileUrl)}`);
   const result   = await resp.json();
   if (result.status === 200) totalNFTs = result.data;
